@@ -101,8 +101,9 @@ export default function CartPage() {
     // ✅ Update UI + Redux instantly
     dispatch(removeFromCart(pid))
     setLocalQuantities((prev) => {
-      const { [pid]: _, ...rest } = prev
-      return rest
+      const { [pid]: _removed, ...rest } = prev;
+      void _removed;
+      return rest;
     })
 
     try {

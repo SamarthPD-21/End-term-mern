@@ -46,9 +46,22 @@ export const uploadProfileImageThunk = createAsyncThunk(
     try {
       const data = await apiUploadProfileImage(file);
       // API returns { message, image, user }
-      return data.user || { image: data.image };
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data || { message: err.message });
+      const d = data as unknown;
+      if (d && typeof d === "object") {
+        const od = d as Record<string, unknown>;
+        if (od.user !== undefined) return od.user as unknown;
+        return { image: typeof od.image === "string" ? od.image : undefined };
+      }
+      return { image: undefined };
+    } catch (err) {
+      const e = err as unknown;
+      let payload: unknown = { message: String(e) };
+      if (e && typeof e === "object") {
+        const oe = e as Record<string, unknown>;
+        const resp = oe.response as Record<string, unknown> | undefined;
+        payload = resp?.data ?? oe.message ?? payload;
+      }
+      return rejectWithValue(payload);
     }
   }
 );
@@ -125,22 +138,31 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(uploadProfileImageThunk.fulfilled, (state, action) => {
+    builder.addCase(uploadProfileImageThunk.fulfilled, (state, action: PayloadAction<unknown>) => {
       // If the thunk returned a user object, map it into state
-      const payload = action.payload as any;
-      if (payload && payload.name !== undefined) {
-        return {
-          name: payload.name,
-          email: payload.email,
-          profileImage: payload.profileImage || null,
-          cartdata: payload.cartdata || [],
-          wishlistdata: payload.wishlistdata || null,
-          orderdata: payload.orderdata || null,
-          addressdata: payload.addressdata || null,
-        } as UserState;
+      const payload = action.payload as unknown;
+      if (payload && typeof payload === 'object') {
+        const p = payload as Record<string, unknown>;
+        if (p.name !== undefined) {
+          return {
+            name: typeof p.name === "string" ? p.name : null,
+            email: typeof p.email === "string" ? p.email : null,
+            profileImage: typeof p.profileImage === "string" ? p.profileImage : null,
+            cartdata: Array.isArray(p.cartdata) ? (p.cartdata as unknown as CartItem[]) : [],
+            wishlistdata: Array.isArray(p.wishlistdata)
+              ? (p.wishlistdata as unknown as Array<{ id: string; name: string; price: number }>)
+              : null,
+            orderdata: Array.isArray(p.orderdata)
+              ? (p.orderdata as unknown as Array<{ id: string; name: string; price: number }>)
+              : null,
+            addressdata: Array.isArray(p.addressdata)
+              ? (p.addressdata as unknown as Array<AddressData>)
+              : null,
+          } as UserState;
+        }
       }
       // otherwise payload might be just the image string
-      if (typeof payload === "string") {
+      if (typeof payload === 'string') {
         state.profileImage = payload;
       }
     });

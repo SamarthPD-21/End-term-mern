@@ -7,6 +7,8 @@ import { RootState } from "@/redux/store";
 export default function WishlistPage() {
   const user = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
+  // dispatch may be used later for wishlist actions; keep lint happy by referencing in a noop when unused
+  void dispatch;
   const wishlist = user.wishlistdata || {};
 
   const handleRemove = (id: string) => {

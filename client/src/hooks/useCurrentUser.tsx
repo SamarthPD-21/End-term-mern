@@ -2,7 +2,7 @@
 
 import { setUser } from '@/redux/userSlice';
 import { getCurrentUser } from '@/lib/User';
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -36,15 +36,15 @@ export default function useCurrentUser() {
         // Re-run when pathname changes (navigating pages) so latest user/profileImage is loaded,
         // and when the window regains focus (user may have switched accounts in another tab).
         const onFocus = () => fetchUser();
-        window.addEventListener('focus', onFocus);
-        document.addEventListener('visibilitychange', () => {
+        const onVisibility = () => {
             if (document.visibilityState === 'visible') fetchUser();
-        });
+        };
+        window.addEventListener('focus', onFocus);
+        document.addEventListener('visibilitychange', onVisibility);
 
         return () => {
             window.removeEventListener('focus', onFocus);
-            // best-effort: remove visibilitychange listener by re-creating same signature isn't trivial here,
-            // but it's a tiny handler so leaving as-is is acceptable. (Alternative: use named handler.)
+            document.removeEventListener('visibilitychange', onVisibility);
         };
     }, [dispatch, router, pathname])
 }

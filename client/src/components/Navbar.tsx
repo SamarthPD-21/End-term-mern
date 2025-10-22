@@ -67,6 +67,7 @@ const Navbar = () => {
             <div title={user?.name ?? "Profile"} className="animate-pop hover:scale-105">
               {user?.profileImage ? (
                 // Use plain img to avoid next/image remote config issues
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={user.profileImage}
                   alt={user.name ?? "profile"}

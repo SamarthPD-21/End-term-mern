@@ -51,6 +51,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
             <div className="relative group">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-white/20 flex items-center justify-center text-xl font-bold">
                 {user.profileImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={user.profileImage} alt={user.name || 'profile'} className="w-full h-full object-cover" />
                 ) : (
                   initials
@@ -60,16 +61,28 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
                 const file = e.target.files?.[0];
                 if (!file) return;
                 setToast({ visible: true, status: 'uploading', message: 'Uploading profile image...' });
-                // @ts-ignore
-                dispatch(uploadProfileImageThunk(file)).unwrap()
+                // @ts-expect-error - Redux thunk typing; unwrap() can produce either user object or image string
+                dispatch(uploadProfileImageThunk(file))
+                  .unwrap()
                   .then(() => {
                     setToast({ visible: true, status: 'success', message: 'Profile image saved' });
-                    setTimeout(() => setToast(s => ({ ...s, visible: false })), 2500);
+                    setTimeout(() => setToast((s) => ({ ...s, visible: false })), 2500);
                   })
-                  .catch((err: any) => {
-                    const msg = err?.payload?.error || err?.message || 'Upload failed';
+                  .catch((err: unknown) => {
+                    const extractErrorMessage = (e: unknown) => {
+                      if (e == null) return 'Upload failed';
+                      if (typeof e === 'string') return e;
+                      if (typeof e === 'object') {
+                        const o = e as Record<string, unknown>;
+                        const payload = o.payload as Record<string, unknown> | undefined;
+                        const msg = payload?.error ?? o.message ?? o.error;
+                        if (typeof msg === 'string') return msg;
+                      }
+                      return 'Upload failed';
+                    };
+                    const msg = extractErrorMessage(err);
                     setToast({ visible: true, status: 'error', message: String(msg) });
-                    setTimeout(() => setToast(s => ({ ...s, visible: false })), 4000);
+                    setTimeout(() => setToast((s) => ({ ...s, visible: false })), 4000);
                   });
               }} />
               <label htmlFor="sidebarProfileFile" className="absolute inset-0 flex items-center justify-center cursor-pointer" aria-hidden={false}>

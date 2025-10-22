@@ -30,9 +30,8 @@ export default function ProfileOverview() {
     setUploading(true);
     setStatus("uploading");
     // dispatch thunk (returns a promise)
-    // @ts-ignore
+    // @ts-expect-error - unwrap typing
     dispatch(uploadProfileImageThunk(file))
-      // @ts-ignore
       .unwrap()
       .then(() => {
         setUploading(false);
@@ -41,20 +40,29 @@ export default function ProfileOverview() {
         // clear status after 2s
         setTimeout(() => setStatus("idle"), 2000);
       })
-      .catch((err: any) => {
+      .catch((err: unknown) => {
         setUploading(false);
-        // Try several places for a server message
-        const msg =
-          err?.payload?.error ||
-          err?.error?.error ||
-          err?.error?.message ||
-          err?.message ||
-          err?.payload?.message ||
-          "Upload failed";
+        const extractErrorMessage = (e: unknown) => {
+          if (e == null) return 'Upload failed';
+          if (typeof e === 'string') return e;
+          if (typeof e === 'object') {
+            const o = e as Record<string, unknown>;
+            const payload = o.payload as Record<string, unknown> | undefined;
+            const msg = payload?.error ?? o.error ?? o.message;
+            if (typeof msg === 'string') return msg;
+          }
+          return 'Upload failed';
+        };
+        const msg = extractErrorMessage(err);
         setStatus("error");
         setStatusMessage(String(msg));
       });
   };
+
+  // preview and uploading may be used in the UI later; silence unused-vars during build
+  void preview;
+  void uploading;
+  void onFileChange;
 
   const cards = [
     { title: "Wishlist", count: Object.keys(user.wishlistdata || {}).length },
