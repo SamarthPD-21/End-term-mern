@@ -21,6 +21,7 @@ export default function useCurrentUser() {
             dispatch(setUser({
                 name: response.name,
                 email: response.email,
+                isAdmin: response.isAdmin ?? false,
                 cartdata: response.cartdata,
                 wishlistdata: response.wishlistdata,
                 orderdata: response.orderdata,

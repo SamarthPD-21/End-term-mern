@@ -4,6 +4,7 @@ import generateToken from "../config/jwt.js";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "change-me";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "samarthpd21@gmail.com";
 
 export const signup = async (req, res) => {
   try {
@@ -29,11 +30,12 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create user and set isAdmin when email matches configured admin
     const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
+      isAdmin: email === ADMIN_EMAIL,
     });
 
     const token = await generateToken(newUser._id);
@@ -47,9 +49,10 @@ export const signup = async (req, res) => {
     };
     res.cookie("token", token, cookieOptions);
     // hide password
-    const out = newUser.toObject();
-    delete out.password;
-    return res.status(201).json({ user: out, token });
+  const out = newUser.toObject();
+  delete out.password;
+  // ensure isAdmin is included
+  return res.status(201).json({ user: out, token });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Error creating user" });
@@ -92,9 +95,9 @@ export const signin = async (req, res) => {
 
     res.cookie("token", token, cookieOptions);
 
-    const out = user.toObject();
-    delete out.password;
-    return res.status(200).json({ message: "Login successful", user: out });
+  const out = user.toObject();
+  delete out.password;
+  return res.status(200).json({ message: "Login successful", user: out });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Error signing in" });
@@ -130,7 +133,7 @@ export const me = async (req, res) => {
       }
     }
 
-    const user = await User.findById(userId).select("-password");
+  const user = await User.findById(userId).select("-password");
     if (!user) return res.status(404).json({ error: "User not found" });
 
     return res.status(200).json({ user });

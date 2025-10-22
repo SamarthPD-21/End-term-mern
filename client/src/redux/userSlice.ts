@@ -23,6 +23,7 @@ interface CartItem {
 interface UserState {
   name: string | null;
   email: string | null;
+  isAdmin?: boolean | null;
   profileImage?: string | null;
   cartdata: CartItem[];
   wishlistdata: Array<{ id: string; name: string; price: number }> | null;
@@ -33,6 +34,7 @@ interface UserState {
 const initialState: UserState = {
   name: null,
   email: null,
+  isAdmin: null,
   profileImage: null,
   cartdata: [],
   wishlistdata: null,

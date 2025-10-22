@@ -1,6 +1,7 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
 import User from '../models/user.model.js'
+import Product from '../models/product.model.js'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: './.env' })
@@ -36,22 +37,30 @@ router.post('/', async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    let cart = user.cartdata || [];
+  let cart = user.cartdata || [];
 
     // check if product already exists
     const existingIndex = cart.findIndex(item => item.productId === productId);
 
+    // Check product stock
+    const prod = await Product.findOne({ _id: productId }) || await Product.findOne({ productId: Number(productId) });
+    const available = prod ? Number(prod.quantity || 0) : null;
+
     if (existingIndex >= 0) {
-      // update quantity
-      cart[existingIndex].quantity += quantity;
+      // update quantity but cap by available stock if known
+      const desired = cart[existingIndex].quantity + Number(quantity);
+      const finalQty = available == null ? desired : Math.min(desired, available);
+      cart[existingIndex].quantity = finalQty;
     } else {
-      // push new item
+      // push new item, cap by available
+      const desired = Number(quantity) || 1;
+      const finalQty = available == null ? desired : Math.min(desired, available);
       cart.push({
         productId,
         name,
         price,
         image,
-        quantity,
+        quantity: finalQty,
       });
     }
 
@@ -83,7 +92,11 @@ router.patch('/', async (req, res) => {
       if (Number(quantity) <= 0) {
         cart.splice(idx, 1) // remove item
       } else {
-        cart[idx].quantity = Number(quantity)
+        // cap to available stock if we can find the product
+        const prod = await Product.findOne({ _id: productId }) || await Product.findOne({ productId: Number(productId) });
+        const available = prod ? Number(prod.quantity || 0) : null;
+        const desired = Number(quantity);
+        cart[idx].quantity = available == null ? desired : Math.min(desired, available);
       }
     }
 

@@ -1,21 +1,29 @@
-'use client'
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client"
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
+import { getProducts } from "@/lib/Products";
 
 
 export default function LeatherProducts() {
   const [notice, setNotice] = useState<string | null>(null)
 
-  const products = [
-    { name: "Premium Leather Bags", id: "prod-1", price: 4999 },
-    { name: "Handcrafted Wallets", id: "prod-2", price: 1299 },
-    { name: "Leather Belts", id: "prod-3", price: 899 },
-    { name: "Travel Accessories", id: "prod-4", price: 2199 },
-    { name: "Leather Jackets", id: "prod-5", price: 8999 },
-    { name: "Executive Portfolios", id: "prod-6", price: 1799 },
-  ];
+  const [products, setProducts] = useState<Array<any>>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getProducts("leather");
+        if (mounted && data?.products) setProducts(data.products.map((p: any) => ({ id: p._id, name: p.name, price: p.price ?? 0, image: p.image })));
+      } catch (err) {
+        console.error("Failed to load leather products", err);
+      }
+    })();
+    return () => { mounted = false };
+  }, []);
 
   const whyChooseFeatures = [
     "Private Label Services Available",

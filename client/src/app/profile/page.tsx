@@ -3,6 +3,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import AuthModal from "@/components/AuthModal";
+import Link from 'next/link';
 import { useState } from "react";
 import { uploadProfileImageThunk } from "@/redux/userSlice";
 
@@ -110,6 +111,12 @@ export default function ProfileOverview() {
             <div className="text-sm text-gray-500">No address saved</div>
           )}
         </div>
+      </div>
+
+      <div className="mt-6">
+        <Link href="/profile/admin" className="inline-block bg-green-600 text-white px-4 py-2 rounded shadow hover:brightness-105 transition">
+          Admin Panel
+        </Link>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
-'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSelector, useDispatch } from 'react-redux'
@@ -60,6 +61,7 @@ export default function CartPage() {
 
   // Local state for quantities
   const [localQuantities, setLocalQuantities] = useState<Record<string, number>>({})
+  const [availableMap, setAvailableMap] = useState<Record<string, number>>({})
 
   // ✅ Sync localQuantities whenever cartdata changes
   useEffect(() => {
@@ -73,28 +75,74 @@ export default function CartPage() {
     }
   }, [user?.cartdata])
 
-  const updateQuantity = async (pid: string, change: number) => {
-    const currentQty = localQuantities[pid] || 1
-    const newQty = Math.max(currentQty + change, 1)
+  // fetch product stock for items (map of pid -> quantity)
+  useEffect(() => {
+    let mounted = true
+    const loadStocks = async () => {
+      try {
+        const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+        const ids = cartItems.map(it => it.productId || it.id!).filter(Boolean)
+        if (ids.length === 0) {
+          if (mounted) setAvailableMap({})
+          return
+        }
 
-    // ✅ Update UI + Redux instantly
+        const res = await fetch(`${API}/api/products/batch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids }),
+        })
+        if (!res.ok) return
+        const json = await res.json()
+        const prods: Array<any> = json.products || []
+        const map: Record<string, number> = {}
+        prods.forEach(p => {
+          if (!p) return
+          const keyById = String(p._id)
+          map[keyById] = Number(p.quantity || 0)
+          if (typeof p.productId !== 'undefined') map[String(p.productId)] = Number(p.quantity || 0)
+        })
+        if (mounted) setAvailableMap(map)
+      } catch (e) {
+        console.error('loadStocks error', e)
+      }
+    }
+    loadStocks()
+    return () => { mounted = false }
+  }, [cartItems])
+
+  // per-item debounce timers
+  const timers = useRef<Record<string, number | null>>({})
+
+  const updateQuantity = (pid: string, change: number) => {
+    const currentQty = localQuantities[pid] || 1
+    const desired = Math.max(currentQty + change, 1)
+
+    // enforce client-side cap if we know available stock
+    const available = availableMap[pid]
+    const newQty = typeof available === 'number' && available >= 0 ? Math.min(desired, available) : desired
+
+    // optimistic UI update
     setLocalQuantities((prev) => ({ ...prev, [pid]: newQty }))
     dispatch(updateCartQuantity({ id: pid, quantity: newQty }))
 
-    try {
-      const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
-      const res = await fetch(`${API}/api/cart`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: pid, quantity: newQty }),
-      })
-      if (!res.ok) throw new Error('Failed to update quantity')
-      // Optionally refresh if backend returns updated cart
-      await refreshUser()
-    } catch (e) {
-      console.error(e)
-    }
+    // debounce server patch to coalesce rapid clicks
+    if (timers.current[pid]) window.clearTimeout(timers.current[pid]!)
+    timers.current[pid] = window.setTimeout(async () => {
+      try {
+        const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+        const res = await fetch(`${API}/api/cart`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: pid, quantity: newQty }),
+        })
+        if (!res.ok) throw new Error('Failed to update quantity')
+        await refreshUser()
+      } catch (e) {
+        console.error(e)
+      }
+    }, 220)
   }
 
   const removeItem = async (pid: string) => {
@@ -206,7 +254,13 @@ export default function CartPage() {
                         <span className="px-3 py-1 border rounded-lg">{qty}</span>
                         <button
                           onClick={() => updateQuantity(pid, 1)}
-                          className="px-3 py-1 rounded-lg border transition-transform hover:scale-110 duration-200"
+                          disabled={typeof availableMap[pid] === 'number' && qty >= availableMap[pid]}
+                          aria-disabled={typeof availableMap[pid] === 'number' && qty >= availableMap[pid]}
+                          title={typeof availableMap[pid] === 'number' && qty >= availableMap[pid] ? 'Reached available stock' : 'Increase quantity'}
+                          className={
+                            "px-3 py-1 rounded-lg border transition-transform hover:scale-110 duration-200 " +
+                            (typeof availableMap[pid] === 'number' && qty >= availableMap[pid] ? 'opacity-50 cursor-not-allowed hover:scale-100' : '')
+                          }
                         >
                           +
                         </button>

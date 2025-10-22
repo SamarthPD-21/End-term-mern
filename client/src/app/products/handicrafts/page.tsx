@@ -1,15 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client"
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { getProducts } from "@/lib/Products";
+import ProductCard from "@/components/ProductCard";
 
 export default function IndianHandicrafts() {
-  const products = [
-    { name: "Wooden Sculptures", id: 1 },
-    { name: "Textile Art Pieces", id: 2 },
-    { name: "Ceramic Pottery", id: 3 },
-    { name: "Metal Artwork", id: 4 },
-    { name: "Traditional Paintings", id: 5 },
-    { name: "Decorative Items", id: 6 },
-  ];
+  const [products, setProducts] = useState<Array<any>>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getProducts("handicrafts");
+        if (mounted && data?.products) setProducts(data.products.map((p: any) => ({ id: p._id, name: p.name, price: p.price ?? 0, image: p.image })));
+      } catch (err) {
+        console.error("Failed to load handicrafts products", err);
+      }
+    })();
+    return () => { mounted = false };
+  }, []);
 
   const whyChooseFeatures = [
     "Authentic Artisan Craftsmanship",
@@ -84,35 +95,7 @@ export default function IndianHandicrafts() {
           {/* Dynamic Grid for Any Number of Products */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300"
-              >
-                {/* Product Image */}
-                <div className="h-96 bg-gray-300 relative overflow-hidden">
-                  <div className="w-full h-full bg-gray-300">
-                    <Image
-                      src='/images/placeholder.png'
-                      alt={product.name}
-                      className="object-cover w-full h-full"
-                      layout="fill"
-                    />
-                  </div>
-                </div>
-      
-                {/* Product Details */}
-                <div className="p-8 text-center">
-                  <h3 className="font-playfair font-semibold text-2xl text-veblyssText mb-6">
-                    {product.name}
-                  </h3>
-                  <button
-                    className="bg-veblyssPrimary text-veblyssTextLight font-opensans font-bold text-lg px-8 py-3 rounded-xl hover:bg-opacity-90 transition-all duration-300"
-                    style={{ backgroundColor: "#368581", color: "#FAF9F6" }}
-                  >
-                    Check More
-                  </button>
-                </div>
-              </div>
+              <ProductCard key={product.id} product={{ id: product.id, name: product.name, price: product.price ?? 0, image: product.image }} setNotice={() => {}} />
             ))}
           </div>
         </div>
