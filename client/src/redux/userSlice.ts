@@ -1,5 +1,6 @@
 // src/redux/userSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { uploadProfileImage as apiUploadProfileImage } from "../lib/User";
 
 interface AddressData {
   _id: string;
@@ -22,6 +23,7 @@ interface CartItem {
 interface UserState {
   name: string | null;
   email: string | null;
+  profileImage?: string | null;
   cartdata: CartItem[];
   wishlistdata: Array<{ id: string; name: string; price: number }> | null;
   orderdata: Array<{ id: string; name: string; price: number }> | null;
@@ -31,11 +33,25 @@ interface UserState {
 const initialState: UserState = {
   name: null,
   email: null,
+  profileImage: null,
   cartdata: [],
   wishlistdata: null,
   orderdata: null,
   addressdata: null,
 };
+
+export const uploadProfileImageThunk = createAsyncThunk(
+  "user/uploadProfileImage",
+  async (file: File, { rejectWithValue }) => {
+    try {
+      const data = await apiUploadProfileImage(file);
+      // API returns { message, image, user }
+      return data.user || { image: data.image };
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data || { message: err.message });
+    }
+  }
+);
 
 const userSlice = createSlice({
   name: "user",
@@ -104,6 +120,30 @@ const userSlice = createSlice({
     updateAddress(state, action: PayloadAction<Array<AddressData>>) {
       state.addressdata = action.payload;
     },
+    setProfileImage(state, action: PayloadAction<string | null>) {
+      state.profileImage = action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(uploadProfileImageThunk.fulfilled, (state, action) => {
+      // If the thunk returned a user object, map it into state
+      const payload = action.payload as any;
+      if (payload && payload.name !== undefined) {
+        return {
+          name: payload.name,
+          email: payload.email,
+          profileImage: payload.profileImage || null,
+          cartdata: payload.cartdata || [],
+          wishlistdata: payload.wishlistdata || null,
+          orderdata: payload.orderdata || null,
+          addressdata: payload.addressdata || null,
+        } as UserState;
+      }
+      // otherwise payload might be just the image string
+      if (typeof payload === "string") {
+        state.profileImage = payload;
+      }
+    });
   },
 });
 
@@ -121,6 +161,9 @@ export const {
   updateWishlist,
   updateOrder,
   updateAddress,
+  setProfileImage,
 } = userSlice.actions;
+
+// uploadProfileImageThunk is exported where it is declared above
 
 export default userSlice.reducer;

@@ -40,3 +40,16 @@ export const deleteUserAddress = async (addressId: string) => {
     throw error;
   }
 };
+
+export const uploadProfileImage = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await api.post("/api/user/upload-profile-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

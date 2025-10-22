@@ -75,9 +75,10 @@ export default function ProductCard({
   return (
     <div
       key={product.id}
-      className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300"
+      className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300 animate-pop"
     >
       <div className="h-96 bg-gray-300 relative overflow-hidden">
+        <div className="image-overlay pointer-events-none" />
         <Image
           src={product.image || "/images/placeholder.png"}
           alt={product.name}
@@ -88,7 +89,7 @@ export default function ProductCard({
       </div>
 
       <div className="p-8 text-center">
-        <h3 className="font-playfair font-semibold text-2xl text-veblyssText mb-4">
+        <h3 className="font-playfair font-semibold text-2xl text-spdText mb-4">
           {product.name}
         </h3>
 
@@ -99,7 +100,7 @@ export default function ProductCard({
         <div className="flex justify-center gap-4">
           <button
             onClick={() => addToCart(product)}
-            className="bg-veblyssPrimary text-veblyssTextLight font-opensans font-bold text-lg px-6 py-3 rounded-xl hover:bg-opacity-90 transition-all duration-300"
+            className="bg-spdPrimary text-spdTextLight font-opensans font-bold text-lg px-6 py-3 rounded-xl hover:bg-opacity-90 transition-all duration-300"
             style={{ backgroundColor: "#368581", color: "#FAF9F6" }}
             disabled={loadingAdd}
           >
@@ -108,7 +109,7 @@ export default function ProductCard({
 
           <Link
             href="#"
-            className="inline-block text-veblyssPrimary font-opensans font-bold text-lg px-4 py-3 rounded-xl border"
+            className="inline-block text-spdPrimary font-opensans font-bold text-lg px-4 py-3 rounded-xl border"
           >
             Check More
           </Link>

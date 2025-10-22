@@ -57,7 +57,7 @@ export default function Home() {
         <div className="relative flex flex-col items-center justify-center min-h-screen">
           <Image
             src="/images/placeholder.png"
-            alt="VeBlyss Global Logo"
+            alt="SPD Global Logo"
             className="object-cover sm:static sm:w-full sm:h-auto sm:object-cover"
             fill
             priority
@@ -112,13 +112,13 @@ export default function Home() {
                 className="font-bold text-4xl lg:text-5xl"
                 style={{ color: "#368581", fontFamily: "Playfair Display" }}
               >
-                Welcome to VeBlyss Global
+                Welcome to SPD Global
               </h2>
               <p
                 className="text-lg leading-relaxed"
                 style={{ color: "#222", fontFamily: "Open Sans" }}
               >
-                Based in Bengaluru, VeBlyss Global specializes in ethically
+                Based in Bengaluru, SPD Global specializes in ethically
                 sourced, premium Indian exports including imitation jewelry,
                 copper-ware, leather goods, and sustainable products for global
                 markets...

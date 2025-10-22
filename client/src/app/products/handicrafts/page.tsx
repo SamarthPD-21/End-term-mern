@@ -34,7 +34,7 @@ export default function IndianHandicrafts() {
   ];
 
   return (
-    <div className="bg-veblyssBackground">
+  <div className="bg-spdBackground">
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         {/* Background Image with Overlay */}
@@ -46,7 +46,7 @@ export default function IndianHandicrafts() {
 
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <h1 className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-veblyssSecondary mb-6 max-w-6xl"
+          <h1 className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-spdSecondary mb-6 max-w-6xl"
             style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}>
             Indian Handicrafts
           </h1>

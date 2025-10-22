@@ -1,11 +1,11 @@
 export default function Footer() {
   return (
-    <footer className="bg-teal-700 text-white py-8">
+    <footer className="bg-teal-700 text-white py-8 animate-slide-up">
       <div className="mx-auto">
         {/* Top Section */}
         <div className="flex flex-col md:flex-row justify-end items-start md:items-center border-b border-white pb-6 mb-6">
           <div className="text-left px-10">
-            <h2 className="text-lg font-bold mb-2">VeBlyss Global Pvt Ltd</h2>
+            <h2 className="text-lg font-bold mb-2">SPD Global Pvt Ltd</h2>
             <ul className="space-y-1 text-sm">
               <li>Address</li>
               <li>Email</li>

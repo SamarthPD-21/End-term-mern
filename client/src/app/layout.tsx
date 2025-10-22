@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import ReactReduxProvider from "./providers";
 
 export const metadata: Metadata = {
-  title: "VeBlyss Global",
+  title: "SPD Global",
   description: "Your one-stop solution for lifestyle, fashion, and home products.",
 };
 

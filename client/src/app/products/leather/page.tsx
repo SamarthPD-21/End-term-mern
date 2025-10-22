@@ -40,7 +40,7 @@ export default function LeatherProducts() {
   ];
 
   return (
-    <div className="bg-veblyssBackground">
+  <div className="bg-spdBackground">
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         {/* Background Image with Overlay */}
@@ -52,11 +52,11 @@ export default function LeatherProducts() {
 
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <h1 className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-veblyssSecondary mb-6 max-w-6xl"
+          <h1 className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-spdSecondary mb-6 max-w-6xl"
             style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}>
             Leather Products
           </h1>
-          <p className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-veblyssTextLight mb-12 max-w-4xl"
+          <p className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-spdTextLight mb-12 max-w-4xl"
             style={{ color: "#FAF9F6", fontFamily: "Open Sans" }}>
             Crafted with care, tailored for global appeal.
           </p>

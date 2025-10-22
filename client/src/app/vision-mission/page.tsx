@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 
 export default function VisionMission() {
@@ -17,7 +18,7 @@ export default function VisionMission() {
   ];
 
   return (
-    <div className="bg-veblyssBackground">
+    <div className="bg-spdBackground">
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         {/* Background Image with Overlay */}
@@ -29,28 +30,36 @@ export default function VisionMission() {
 
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <h1 className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-veblyssSecondary mb-6 max-w-6xl"
-            style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}>
+          <h1
+            className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-spdSecondary mb-6 max-w-6xl"
+            style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}
+          >
             Our Vision & Mission
           </h1>
-          <p className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-veblyssTextLight mb-12 max-w-4xl"
-            style={{ color: "#FFECE0", fontFamily: "Open Sans" }}>
+
+          <p
+            className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-spdTextLight mb-12 max-w-4xl"
+            style={{ color: "#FFECE0", fontFamily: "Open Sans" }}
+          >
             Purpose-led. Globally focused. Rooted in Indian heritage
           </p>
         </div>
       </section>
 
       {/* Our Vision Section */}
-      <section className="bg-veblyssSecondary py-16">
+      <section className="bg-spdSecondary py-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             {/* Content */}
             <div className="lg:w-1/2 space-y-8">
-              <h2 className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary"
-                style={{ color: "#368581", fontFamily: "Playfair Display" }}>
+              <h2
+                className="font-playfair font-bold text-4xl lg:text-5xl text-spdPrimary"
+                style={{ color: "#368581", fontFamily: "Playfair Display" }}
+              >
                 Our vision
               </h2>
-              <p className="font-opensans text-lg text-veblyssTextLight leading-relaxed bg-veblyssPrimary bg-opacity-10 py-6 rounded-xl">
+
+              <p className="font-opensans text-lg text-spdTextLight leading-relaxed bg-spdPrimary bg-opacity-10 py-6 rounded-xl">
                 To be a global leader in exporting Indian-crafted fashion,
                 lifestyle, and essential products—delivering trust and value to
                 every client.
@@ -60,9 +69,7 @@ export default function VisionMission() {
             {/* Illustration */}
             <div className="lg:w-1/2">
               <div className="w-full h-64 bg-gray-300 rounded-xl flex items-center justify-center">
-                <span className="text-veblyssTextLight font-opensans text-lg">
-                  illustration
-                </span>
+                <span className="text-spdTextLight font-opensans text-lg">illustration</span>
               </div>
             </div>
           </div>
@@ -70,7 +77,7 @@ export default function VisionMission() {
       </section>
 
       {/* Our Mission Section */}
-      <section className="bg-veblyssSecondary py-16">
+      <section className="bg-spdSecondary py-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             {/* Illustration */}
@@ -80,24 +87,27 @@ export default function VisionMission() {
 
             {/* Content */}
             <div className="lg:w-1/2 space-y-8 order-1 lg:order-2">
-              <h2 className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary"
-                style={{ color: "#368581", fontFamily: "Playfair Display" }}>
+              <h2
+                className="font-playfair font-bold text-4xl lg:text-5xl text-spdPrimary"
+                style={{ color: "#368581", fontFamily: "Playfair Display" }}
+              >
                 Our mission
               </h2>
-              <div className="space-y-4 bg-veblyssPrimary bg-opacity-10 p-6 rounded-xl">
-                <p className="font-opensans text-lg text-veblyssTextLight leading-relaxed">
+
+              <div className="space-y-4 bg-spdPrimary bg-opacity-10 p-6 rounded-xl">
+                <p className="font-opensans text-lg text-spdTextLight leading-relaxed">
                   To empower Indian artisans and manufacturers by giving them
                   global reach
                 </p>
-                <p className="font-opensans text-lg text-veblyssTextLight leading-relaxed">
+                <p className="font-opensans text-lg text-spdTextLight leading-relaxed">
                   To deliver high-quality, sustainable and ethically sourced
                   products from India
                 </p>
-                <p className="font-opensans text-lg text-veblyssTextLight leading-relaxed">
+                <p className="font-opensans text-lg text-spdTextLight leading-relaxed">
                   To align every product with international design and
                   compliance standards
                 </p>
-                <p className="font-opensans text-lg text-veblyssTextLight leading-relaxed">
+                <p className="font-opensans text-lg text-spdTextLight leading-relaxed">
                   To build long-term value for clients through trust,
                   transparency, and excellence
                 </p>
@@ -108,7 +118,7 @@ export default function VisionMission() {
       </section>
 
       {/* What Drives Us */}
-      <section className="bg-veblyssSecondary py-16 relative">
+      <section className="bg-spdSecondary py-16 relative">
         <div className="absolute inset-0 opacity-25">
           <Image
             src="https://api.builder.io/api/v1/image/assets/TEMP/0ac27a7b365479a91ab00d23f9044cda020cccb7?width=2880"
@@ -119,8 +129,10 @@ export default function VisionMission() {
         </div>
 
         <div className="relative z-10 container mx-auto px-4">
-          <h2 className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary text-center mb-12"
-            style={{ color: "#368581", fontFamily: "Playfair Display" }}>
+          <h2
+            className="font-playfair font-bold text-4xl lg:text-5xl text-spdPrimary text-center mb-12"
+            style={{ color: "#368581", fontFamily: "Playfair Display" }}
+          >
             What Drives Us
           </h2>
 
@@ -130,7 +142,7 @@ export default function VisionMission() {
                 key={index}
                 className="bg-white rounded-xl p-12 shadow-lg hover:shadow-xl transition-all duration-300 text-center"
               >
-                <h3 className="font-playfair font-bold text-3xl lg:text-4xl text-veblyssText">
+                <h3 className="font-playfair font-bold text-3xl lg:text-4xl text-spdText">
                   {value}
                 </h3>
               </div>
@@ -140,10 +152,12 @@ export default function VisionMission() {
       </section>
 
       {/* How We Bring Our Vision to Life */}
-      <section className="bg-veblyssSecondary py-16">
+      <section className="bg-spdSecondary py-16">
         <div className="container mx-auto px-4">
-          <h2 className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary text-center mb-16"
-            style={{ color: "#368581", fontFamily: "Playfair Display" }}>
+          <h2
+            className="font-playfair font-bold text-4xl lg:text-5xl text-spdPrimary text-center mb-16"
+            style={{ color: "#368581", fontFamily: "Playfair Display" }}
+          >
             How We Bring Our Vision to Life
           </h2>
 
@@ -157,7 +171,7 @@ export default function VisionMission() {
                 <div className="w-64 h-64 bg-gray-300 rounded-xl"></div>
 
                 {/* Text */}
-                <h3 className="font-opensans font-normal text-2xl text-veblyssTextLight bg-veblyssPrimary bg-opacity-90 px-8 py-4 rounded-xl max-w-md">
+                <h3 className="font-opensans font-normal text-2xl text-spdTextLight bg-spdPrimary bg-opacity-90 px-8 py-4 rounded-xl max-w-md">
                   {step}
                 </h3>
               </div>
@@ -167,18 +181,20 @@ export default function VisionMission() {
       </section>
 
       {/* Quote Section */}
-      <section className="bg-veblyssSecondary py-16">
+      <section className="bg-spdSecondary py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <blockquote className="font-playfair text-2xl lg:text-3xl text-veblyssPrimary leading-relaxed"
-              style={{ color: "#368581", fontFamily: "Playfair Display" }}>
+            <blockquote
+              className="font-playfair text-2xl lg:text-3xl text-spdPrimary leading-relaxed"
+              style={{ color: "#368581", fontFamily: "Playfair Display" }}
+            >
               <span className="font-bold">
                 &quot;We believe India&apos;s true strength lies in its craftsmanship, and
                 our goal is to share that strength with the world, sustainably
                 and ethically.&quot;
               </span>
               <footer className="mt-8">
-                <cite className="font-normal text-xl">– VeBlyss</cite>
+                <cite className="font-normal text-xl">– SPD</cite>
               </footer>
             </blockquote>
           </div>

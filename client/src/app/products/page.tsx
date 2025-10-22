@@ -87,12 +87,12 @@ export default function Products() {
             >
               Our Product Range
             </h1>
-            <p
-              className="font-semibold text-xl md:text-2xl lg:text-3xl mb-12 max-w-4xl transition-all duration-700 ease-out delay-200"
-              style={{ color: "#FAF9F6", fontFamily: "Open Sans" }}
+            <h2
+              className="font-bold text-4xl lg:text-5xl text-center mb-12"
+              style={{ color: "#368581", fontFamily: "Playfair Display" }}
             >
-              Discover India&apos;s finest exports across five premium categories
-            </p>
+              Product Categories
+            </h2>
           </div>
         </section>
   
@@ -181,7 +181,7 @@ export default function Products() {
               className="font-bold text-4xl lg:text-5xl text-center mb-16 transition-all duration-700 ease-out"
               style={{ color: "#368581", fontFamily: "Playfair Display" }}
             >
-              Why Choose VeBlyss Global
+              Why Choose SPD Global
             </h2>
   
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">

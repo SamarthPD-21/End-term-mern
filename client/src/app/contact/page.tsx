@@ -1,6 +1,6 @@
 export default function Contact() {
   return (
-    <div className="bg-veblyssBackground min-h-screen">
+  <div className="bg-spdBackground min-h-screen">
       {/* Hero Section */}
       <section className="relative h-96 overflow-hidden">
         <div className="absolute inset-0">
@@ -10,7 +10,7 @@ export default function Contact() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <h1 className="font-playfair font-bold text-4xl md:text-6xl text-veblyssSecondary mb-6"
+          <h1 className="font-playfair font-bold text-4xl md:text-6xl text-spdSecondary mb-6"
             style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}>
             Contact Us
           </h1>
@@ -23,12 +23,12 @@ export default function Contact() {
       </section>
 
       {/* Contact Content */}
-      <section className="bg-veblyssSecondary py-16">
+  <section className="bg-spdSecondary py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             {/* Contact Form */}
-            <div className="bg-veblyssBackground p-8 rounded-xl shadow-lg">
-              <h2 className="font-playfair font-bold text-3xl text-veblyssPrimary mb-8"
+            <div className="bg-spdBackground p-8 rounded-xl shadow-lg">
+                <h2 className="font-playfair font-bold text-3xl text-spdPrimary mb-8"
                 style={{color: "#368581", fontFamily: "Playfair Display"}}>
                 Get In Touch
               </h2>
@@ -36,7 +36,7 @@ export default function Contact() {
               <form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block font-opensans font-semibold text-veblyssText mb-2">
+                    <label className="block font-opensans font-semibold text-spdText mb-2">
                       First Name *
                     </label>
                     <input
@@ -47,7 +47,7 @@ export default function Contact() {
                     />
                   </div>
                   <div>
-                    <label className="block font-opensans font-semibold text-veblyssText mb-2">
+                    <label className="block font-opensans font-semibold text-spdText mb-2">
                       Last Name *
                     </label>
                     <input
@@ -60,7 +60,7 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-veblyssText mb-2">
+                    <label className="block font-opensans font-semibold text-spdText mb-2">
                     Email Address *
                   </label>
                   <input
@@ -72,7 +72,7 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-veblyssText mb-2">
+                    <label className="block font-opensans font-semibold text-spdText mb-2">
                     Company Name
                   </label>
                   <input
@@ -83,7 +83,7 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-veblyssText mb-2">
+                    <label className="block font-opensans font-semibold text-spdText mb-2">
                     Phone Number
                   </label>
                   <input
@@ -94,7 +94,7 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-veblyssText mb-2">
+                    <label className="block font-opensans font-semibold text-spdText mb-2">
                     Product Interest
                   </label>
                   <select className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-veblyssPrimary focus:border-transparent">
@@ -109,7 +109,7 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-veblyssText mb-2">
+                    <label className="block font-opensans font-semibold text-spdText mb-2">
                     Message *
                   </label>
                   <textarea
@@ -131,19 +131,19 @@ export default function Contact() {
 
             {/* Company Information */}
             <div className="space-y-8">
-              <div className="bg-veblyssBackground p-8 rounded-xl shadow-lg">
-                <h2 className="font-playfair font-bold text-3xl text-veblyssPrimary mb-6"
+              <div className="bg-spdBackground p-8 rounded-xl shadow-lg">
+                <h2 className="font-playfair font-bold text-3xl text-spdPrimary mb-6"
                   style={{color: "#368581", fontFamily: "Playfair Display"}}>
-                  VeBlyss Global Pvt Ltd
+                  SPD Global Pvt Ltd
                 </h2>
 
                 <div className="space-y-6">
                   <div>
-                    <h3 className="font-opensans font-bold text-lg text-veblyssText mb-2"
+                    <h3 className="font-opensans font-bold text-lg text-spdText mb-2"
                       style={{color: "#368581", fontFamily: "Playfair Display"}}>
                       Head Office
                     </h3>
-                    <p className="font-opensans text-veblyssText">
+                    <p className="font-opensans text-spdText">
                       Bengaluru, Karnataka, India
                       <br />
                       The heart of traditional craftsmanship and modern
@@ -152,23 +152,23 @@ export default function Contact() {
                   </div>
 
                   <div>
-                    <h3 className="font-opensans font-bold text-lg text-veblyssText mb-2"
+                    <h3 className="font-opensans font-bold text-lg text-spdText mb-2"
                       style={{color: "#368581", fontFamily: "Playfair Display"}}>
                       Email
                     </h3>
-                    <p className="font-opensans text-veblyssText">
-                      info@veblyssglobal.com
+                    <p className="font-opensans text-spdText">
+                      info@spdglobal.com
                       <br />
-                      exports@veblyssglobal.com
+                      exports@spdglobal.com
                     </p>
                   </div>
 
                   <div>
-                    <h3 className="font-opensans font-bold text-lg text-veblyssText mb-2"
+                    <h3 className="font-opensans font-bold text-lg text-spdText mb-2"
                       style={{color: "#368581", fontFamily: "Playfair Display"}}>
                       Phone
                     </h3>
-                    <p className="font-opensans text-veblyssText">
+                    <p className="font-opensans text-spdText">
                       +91 XXX XXX XXXX
                       <br />
                       Available 9 AM - 6 PM IST
@@ -181,16 +181,10 @@ export default function Contact() {
                       Social Media
                     </h3>
                     <div className="flex space-x-4">
-                      <a
-                        href="#"
-                        className="text-veblyssPrimary hover:text-opacity-80 transition-colors"
-                      >
+                      <a href="#" className="text-spdPrimary hover:text-opacity-80 transition-colors">
                         LinkedIn
                       </a>
-                      <a
-                        href="#"
-                        className="text-veblyssPrimary hover:text-opacity-80 transition-colors"
-                      >
+                      <a href="#" className="text-spdPrimary hover:text-opacity-80 transition-colors">
                         Instagram
                       </a>
                     </div>

@@ -2,13 +2,13 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="bg-veblyssBackground min-h-screen my-10">
+  <div className="bg-spdBackground min-h-screen my-10">
       <section className="flex flex-col items-center justify-center min-h-screen px-4">
         <div className="text-center max-w-2xl">
-          <h1 className="font-playfair font-bold text-6xl md:text-8xl text-veblyssPrimary mb-6">
+          <h1 className="font-playfair font-bold text-6xl md:text-8xl text-spdPrimary mb-6">
             404
           </h1>
-          <h2 className="font-playfair font-bold text-3xl md:text-4xl text-veblyssText mb-6">
+          <h2 className="font-playfair font-bold text-3xl md:text-4xl text-spdText mb-6">
             Page Not Found
           </h2>
           <p className="font-opensans text-lg text-veblyssText mb-8 leading-relaxed">
@@ -19,27 +19,24 @@ export default function NotFound() {
           <div className="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:gap-4">
             <Link
               href="/"
-              className="inline-block bg-[#368581] text-veblyssText font-opensans font-bold text-lg px-8 py-4 rounded-xl hover:bg-opacity-90 transition-all duration-300 border-2 border-veblyssPrimary"
+              className="inline-block bg-[#368581] text-spdText font-opensans font-bold text-lg px-8 py-4 rounded-xl hover:bg-opacity-90 transition-all duration-300 border-2 border-spdPrimary"
             >
               Go Home
             </Link>
             <Link
               href="/products"
-              className="inline-block bg-[#368581] text-veblyssText font-opensans font-bold text-lg px-8 py-4 rounded-xl hover:bg-opacity-90 transition-all duration-300 border-2 border-veblyssPrimary"
+              className="inline-block bg-[#368581] text-spdText font-opensans font-bold text-lg px-8 py-4 rounded-xl hover:bg-opacity-90 transition-all duration-300 border-2 border-spdPrimary"
             >
               View Products
             </Link>
           </div>
 
           <div className="mt-12">
-            <p className="font-opensans text-veblyssText mb-4">
+            <p className="font-opensans text-spdText mb-4">
               Looking for our product categories?
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                href="/products/leather"
-                className="text-veblyssPrimary hover:underline"
-              >
+              <Link href="/products/leather" className="text-spdPrimary hover:underline">
                 Leather Products
               </Link>
               <Link

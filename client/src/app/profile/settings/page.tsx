@@ -51,7 +51,7 @@ export default function SettingsPage() {
         </div>
         <button
           onClick={handleSave}
-          className="bg-veblyssPrimary text-white px-4 py-2 rounded-lg shadow"
+          className="bg-spdPrimary text-white px-4 py-2 rounded-lg shadow"
           style={{ backgroundColor: "#368581" }}
         >
           Save Changes

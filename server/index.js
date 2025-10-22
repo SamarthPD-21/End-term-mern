@@ -31,5 +31,14 @@ app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/cart', cartRoutes);
 
+// Error handler (must be after routes)
+app.use((err, req, res, next) => {
+    console.error('Unhandled error middleware:', err);
+    if (err && err.name === 'MulterError') {
+        return res.status(400).json({ error: err.message });
+    }
+    return res.status(500).json({ error: err?.message || 'Internal server error' });
+});
+
 // Listener
 app.listen(port, () => console.log(`Server listening on port ${port}!`));

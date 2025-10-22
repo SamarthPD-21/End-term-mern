@@ -38,7 +38,7 @@ export default function About() {
     ];
   
     return (
-      <div className="bg-veblyssBackground">
+  <div className="bg-spdBackground">
         {/* Hero Section */}
         <section className="relative h-screen overflow-hidden">
           {/* Background Image with Overlay */}
@@ -52,7 +52,7 @@ export default function About() {
           <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
             <h1 className="font-bold text-4xl md:text-6xl lg:text-7xl mb-6 max-w-6xl"
               style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}>
-              About VeBlyss Global Pvt Ltd
+                  About SPD Global
             </h1>
             <p className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-veblyssTextLight mb-12 max-w-4xl"
               style={{ color: "#FFECE0", fontFamily: "Open Sans" }}>
@@ -73,7 +73,7 @@ export default function About() {
                 </h2>
                 <div className="space-y-6">
                   <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                    At VeBlyss Global, we are committed to delivering handpicked,
+                At SPD Global, we are committed to delivering handpicked,
                     high-quality products to global markets. From artisan-made
                     leather goods to eco-conscious lifestyle products, we blend
                     Indian tradition with international taste, ensuring every
@@ -81,12 +81,12 @@ export default function About() {
                     expectations.
                   </p>
                   <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                    We specialize in the global trade of premium-quality Imitation
-                    Jewelry, Genuine Leather Products, Handicrafts & Home Décor,
-                    and Copper Products from India. Our team bridges tradition and
-                    trend, ensuring that our clients receive products that are
-                    stylish, durable, and competitively priced—backed by industry
-                    certifications and international standards.
+                We specialize in the global trade of premium-quality Imitation
+                Jewelry, Genuine Leather Products, Handicrafts & Home Décor,
+                and Copper Products from India. Our team bridges tradition and
+                trend, ensuring that our clients receive products that are
+                stylish, durable, and competitively priced—backed by industry
+                certifications and international standards.
                   </p>
                 </div>
               </div>

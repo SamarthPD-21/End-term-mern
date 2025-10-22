@@ -34,7 +34,7 @@ export default function CopperProducts() {
   ];
 
   return (
-    <div className="bg-veblyssBackground">
+  <div className="bg-spdBackground">
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         <div className="absolute inset-0">
@@ -44,11 +44,11 @@ export default function CopperProducts() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <h1 className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-veblyssSecondary mb-6 max-w-6xl"
+          <h1 className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-spdSecondary mb-6 max-w-6xl"
             style={{color:"#ffece0", fontFamily: "Playfair Display"}}>
             Copper Products
           </h1>
-          <p className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-veblyssTextLight mb-12 max-w-4xl"
+          <p className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-spdTextLight mb-12 max-w-4xl"
             style={{color:"#FAF9F6", fontFamily: "Open Sans"}}>
             Pure copper craftsmanship for health and heritage.
           </p>
@@ -56,10 +56,10 @@ export default function CopperProducts() {
       </section>
 
       {/* Description Section */}
-      <section className="bg-veblyssSecondary py-16">
+  <section className="bg-spdSecondary py-16">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto">
-            <h2 className="font-playfair font-normal text-4xl text-veblyssText mb-8"
+            <h2 className="font-playfair font-normal text-4xl text-spdText mb-8"
               style={{color:"#368581", fontFamily: "Playfair Display"}}>
               Authentic Indian copper products combining traditional Ayurvedic
               wisdom with modern functionality, perfect for health-conscious
@@ -70,13 +70,12 @@ export default function CopperProducts() {
       </section>
 
       {/* Our Product Range */}
-      <section className="bg-veblyssSecondary py-16">
+      <section className="bg-spdSecondary py-16">
         <div className="container mx-auto px-4">
           <h2
-            className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary text-center mb-12"
-            style={{ color: "#368581", fontFamily: "Playfair Display" }}
-          >
-            Our Product Range
+            className="font-playfair font-bold text-4xl lg:text-5xl text-spdPrimary text-center mb-12 "
+            style={{color: "#368581", fontFamily: "Playfair Display"}}>
+            Why Choose Our Copper Products
           </h2>
 
           {/* Dynamic Grid for Any Number of Products */}
@@ -139,7 +138,7 @@ export default function CopperProducts() {
                       key={index}
                       className="bg-white rounded-xl px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-                      <h3 className="font-playfair font-bold text-xl text-veblyssText text-center">
+                          <h3 className="font-playfair font-bold text-xl text-spdText text-center">
                         {feature}
                       </h3>
                     </div>
@@ -162,7 +161,7 @@ export default function CopperProducts() {
                 key={index}
                 className="bg-white rounded-xl px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                <h3 className="font-playfair font-bold text-xl text-veblyssText text-center">
+                  <h3 className="font-playfair font-bold text-xl text-spdText text-center">
                   {item}
                 </h3>
               </div>
@@ -191,12 +190,12 @@ export default function CopperProducts() {
                   </div>
                 </div>
                 <div className="p-6 text-center">
-                  <h3 className="font-playfair font-semibold text-lg text-veblyssText mb-4">
+                  <h3 className="font-playfair font-semibold text-lg text-spdText mb-4">
                     {category.name}
                   </h3>
                   <Link
                     href={category.href}
-                    className="inline-block text-veblyssTextLight font-opensans font-bold text-sm px-4 py-2 rounded-xl hover:bg-opacity-90 transition-all duration-300"
+                    className="inline-block text-spdTextLight font-opensans font-bold text-sm px-4 py-2 rounded-xl hover:bg-opacity-90 transition-all duration-300"
                     style={{ backgroundColor: "#368581", color: "#FAF9F6" }}
                   >
                     Check More
