@@ -113,13 +113,18 @@ const AuthModal: FC<AuthModalProps> = ({ open, onClose }) => {
       // no full page reload — Redux state updated and UI will respond
     } catch (err) {
       console.error(err);
-      // Try to show server-provided error message when available
-      const anyErr = err as any;
-      let message = "Authentication failed";
-      if (anyErr?.response?.data?.error) message = String(anyErr.response.data.error);
-      else if (anyErr?.response?.data?.message) message = String(anyErr.response.data.message);
-      else if (anyErr?.message) message = String(anyErr.message);
-      setError(message);
+      // extract message from unknown error shape safely
+      const extractErrorMessage = (e: unknown): string => {
+        if (!e) return 'Authentication failed';
+        if (typeof e === 'string') return e;
+        if (e instanceof Error) return e.message;
+        // axios-like error shape
+        const maybe = e as { response?: { data?: { error?: string; message?: string } } };
+        if (maybe?.response?.data?.error) return String(maybe.response.data.error);
+        if (maybe?.response?.data?.message) return String(maybe.response.data.message);
+        return 'Authentication failed';
+      }
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }

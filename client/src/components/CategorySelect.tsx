@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useCallback } from "react";
 
 type Props = {
   value: string;
@@ -31,9 +32,13 @@ export default function CategorySelect({ value, onChange, options, placeholder, 
     document.addEventListener("click", onDoc);
     return () => document.removeEventListener("click", onDoc);
   }, []);
+    const choose = useCallback((v: string) => {
+      onChange(v);
+      setOpen(false);
+    }, [onChange]);
 
-  // keyboard navigation
-  useEffect(() => {
+    // keyboard navigation
+    useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
@@ -51,12 +56,7 @@ export default function CategorySelect({ value, onChange, options, placeholder, 
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open, focusedIndex, opts]);
-
-  const choose = (v: string) => {
-    onChange(v);
-    setOpen(false);
-  };
+  }, [open, focusedIndex, opts, choose]);
 
   const label = opts.find((o) => o.value === value)?.label || placeholder || "Select category";
 

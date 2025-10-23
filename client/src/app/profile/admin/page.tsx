@@ -308,7 +308,7 @@ export default function AdminPanel() {
                       <div className="text-sm text-gray-500">{modalProduct.category} • ₹{modalProduct.price}</div>
                       <div className="mt-3 text-sm">{modalProduct.description}</div>
                       <div className="mt-4 flex gap-2">
-                        <button onClick={() => { setEditingId(modalProduct._id); setModalVisible(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="px-3 py-2 bg-blue-600 text-white rounded">Edit</button>
+                        <button onClick={() => { startEdit(modalProduct); setModalVisible(false); }} className="px-3 py-2 bg-blue-600 text-white rounded">Edit</button>
                         <button onClick={() => { onDelete(modalProduct._id); setModalVisible(false); }} className="px-3 py-2 bg-red-600 text-white rounded">Delete</button>
                       </div>
                     </div>
