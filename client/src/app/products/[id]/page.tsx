@@ -12,7 +12,6 @@ import { setUser } from "@/redux/userSlice";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
 
-type PageParams = { id?: string } | Promise<{ id?: string }>;
 type ProductType = {
   _id?: string;
   id?: string;
@@ -26,11 +25,12 @@ type ProductType = {
   stock?: number;
 };
 
-export default function ProductPage({ params }: { params: PageParams }) {
-  // Next.js param values may be provided as a promise; React.use(...) unwraps them
-  // (React.use is available in React 19+). Cast to any to avoid TS issues.
-  // This removes the console warning about accessing params.id directly.
-  const resolved = (React as unknown as { use: (p: unknown) => { id?: string } }).use(params);
+export default function ProductPage(props: unknown) {
+  // Narrow props safely without using `any` so ESLint stays happy.
+  const rawParams = (props as { params?: { id?: string } | Promise<{ id?: string }> }).params;
+  // Next.js param values may be provided as a Promise; React.use(...) unwraps them
+  // (React.use is available in React 19+).
+  const resolved = (React as unknown as { use: (p: unknown) => { id?: string } }).use(rawParams);
   const id = resolved?.id;
   const [product, setProduct] = useState<ProductType | null>(null);
   const [avgRating, setAvgRating] = useState<number>(0);
