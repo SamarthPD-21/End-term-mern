@@ -91,8 +91,8 @@ const userSlice = createSlice({
       try {
         // Only log during development to avoid console noise in production
         if (process.env.NODE_ENV === 'development') {
-          // eslint-disable-next-line no-console
           const incomingProfile = typeof incomingObj['profileImage'] === 'string' ? incomingObj['profileImage'] : undefined;
+            // dev-only diagnostic log
           console.log("[userSlice:setUser] incoming keys:", Object.keys(incomingObj), "incoming.profileImage:", incomingProfile, "current.profileImage:", state.profileImage);
         }
       } catch {

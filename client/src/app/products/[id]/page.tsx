@@ -40,6 +40,17 @@ export default function ProductPage({ params }: { params: PageParams }) {
   const [adding, setAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const dispatch = useDispatch();
+  // build a small client-only helper to navigate back to the category listing
+  const goToCategory = (category?: string) => {
+    if (!category) {
+      // fallback to products root
+      window.location.href = '/products';
+      return;
+    }
+    const slug = String(category).toLowerCase().trim().replace(/\s+/g, '-');
+    // force a full reload of the category page so it fetches fresh data
+    window.location.href = `/products/${slug}`;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -95,6 +106,22 @@ export default function ProductPage({ params }: { params: PageParams }) {
     <div className="container mx-auto px-4 py-12">
       {/* spacer to avoid overlap with fixed navbar (approx height). Adjust if your navbar height differs. */}
       <div style={{ height: 84 }} />
+      {/* Back button to category (animated, prettier) */}
+      <div className="mb-6">
+        <button
+          onClick={() => goToCategory(product.category)}
+          aria-label="Back to category"
+          className="group inline-flex items-center gap-3 px-4 py-2 bg-white/95 rounded-full shadow-md hover:shadow-xl transform transition-all duration-300 hover:-translate-y-1 active:scale-95"
+        >
+          <span className="relative inline-flex items-center justify-center w-9 h-9 bg-gradient-to-tr from-[#e6f7f6] to-[#d6f0ec] rounded-full shadow-md transform transition-transform duration-300 group-hover:scale-105">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5 text-[#18534d] transform transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="absolute -inset-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 10px 24px rgba(24,83,77,0.08)' }} />
+          </span>
+          <span className="text-sm font-semibold text-[#18534d]">Back to {product.category || 'Products'}</span>
+        </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
         {/* Left: image */}
         <div className="rounded-3xl overflow-hidden bg-gradient-to-tr from-neutral-100 to-white shadow-2xl transform transition-all duration-700 animate-fade-in-left">
@@ -114,7 +141,10 @@ export default function ProductPage({ params }: { params: PageParams }) {
         <div className="p-6 bg-white rounded-3xl shadow-2xl transform transition-all duration-700 animate-fade-in-right">
           <div className="flex items-start justify-between gap-6">
             <div>
-              <h1 className="text-5xl md:text-6xl font-playfair font-extrabold mb-3 leading-tight" style={{ color: '#18534d', textShadow: '0 4px 18px rgba(24,83,77,0.06)' }}>{product.name}</h1>
+              <h1 className="text-5xl md:text-6xl font-playfair font-extrabold mb-3 leading-tight animate-fade-in-up" style={{ textShadow: '0 6px 24px rgba(24,83,77,0.06)' }}>
+                <span className="bg-gradient-to-r from-[#0f766e] to-[#2dd4bf] bg-clip-text text-transparent">{product.name}</span>
+              </h1>
+              <div className="w-28 h-1 rounded-full mb-4" style={{ background: 'linear-gradient(90deg,#2dd4bf,#0f766e)' }} />
               <div className="flex items-center gap-3 text-gray-600 mb-3">
                 <div className="flex items-center gap-1 text-yellow-500 star-pulse">{Array.from({ length: Math.round(avgRating) || 0 }).map((_, i) => <span key={i}>⭐</span>)} </div>
                 <div className="text-sm">{avgRating.toFixed(1)} • {reviewCount} reviews</div>
@@ -124,7 +154,9 @@ export default function ProductPage({ params }: { params: PageParams }) {
           </div>
 
           <div className="mb-6">
-            <div className="p-4 bg-white/80 rounded-lg shadow-inner text-gray-700 leading-relaxed text-lg" style={{ lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: (product.description as string) || '' }} />
+            <div className="p-6 bg-white/90 rounded-xl shadow-lg text-gray-700 leading-relaxed text-lg animate-fade-in-up" style={{ lineHeight: 1.85 }}>
+              <div className="prose max-w-none text-gray-800" dangerouslySetInnerHTML={{ __html: (product.description as string) || '<p>No description available.</p>' }} />
+            </div>
           </div>
 
           <div className="flex items-center gap-4 mb-6">

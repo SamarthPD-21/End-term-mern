@@ -81,7 +81,7 @@ export default function ProductComments({ productId }: { productId: string }) {
     if (!editRefs.current[c._id || '']) editRefs.current[c._id || ''] = { textRef: null, ratingRef: null };
   };
 
-  const cancelEdit = (_c: Comment) => {
+  const cancelEdit = () => {
     setComments((s) => s.map((it) => ({ ...it, isEditing: false } as Comment & { isEditing?: boolean })));
   };
 
@@ -176,7 +176,7 @@ export default function ProductComments({ productId }: { productId: string }) {
                         const newRating = Number(refs?.ratingRef?.value ?? c.rating);
                         saveEdit(c, newText, newRating);
                       }} className="px-3 py-1 bg-green-600 text-white rounded">Save</button>
-                      <button onClick={() => cancelEdit(c)} className="px-3 py-1 bg-gray-200 rounded">Cancel</button>
+                      <button onClick={() => cancelEdit()} className="px-3 py-1 bg-gray-200 rounded">Cancel</button>
                     </div>
                   </div>
                 ) : (
