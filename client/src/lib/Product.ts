@@ -18,6 +18,16 @@ export const fetchProducts = async (category?: string) => {
   return resp.data;
 };
 
+export const getProductById = async (id: string) => {
+  const resp = await api.get(`/api/products/${id}`);
+  return resp.data;
+};
+
+export const postProductComment = async (id: string, payload: { rating: number; text?: string }) => {
+  const resp = await api.post(`/api/products/${id}/comments`, payload);
+  return resp.data;
+};
+
 export const updateProduct = async (id: string, data: FormData | Record<string, any>) => {
   const headers = data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
   const resp = await api.put(`/api/products/${id}`, data, { headers });

@@ -15,6 +15,7 @@ interface Product {
   name: string;
   price: number;
   image?: string;
+  _id?: string;
 }
 
 export default function ProductCard({
@@ -108,8 +109,8 @@ export default function ProductCard({
           </button>
 
           <Link
-            href="#"
-            className="inline-block text-spdPrimary font-opensans font-bold text-lg px-4 py-3 rounded-xl border"
+            href={`/products/${product.id || product._id}`}
+            className="inline-block text-spdPrimary font-opensans font-bold text-lg px-4 py-3 rounded-xl border animate-zoom-hover"
           >
             Check More
           </Link>

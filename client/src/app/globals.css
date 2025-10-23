@@ -55,6 +55,25 @@
 @media (hover: hover) and (pointer: fine) {
   .animate-zoom-hover { transition: transform 300ms ease; }
   .animate-zoom-hover:hover { transform: scale(1.03); }
+
+  /* Additional micro-interactions */
+  @keyframes pulseStar {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.08); opacity: 0.9; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .star-pulse { animation: pulseStar 1.2s ease-in-out infinite; display: inline-block; }
+
+  @keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .animate-fade-in-left { animation: fadeInLeft 0.6s ease-out both; }
+  .animate-fade-in-right { animation: fadeInRight 0.6s ease-out both; }
 }
 
 /* Nav underline helper */

@@ -30,6 +30,15 @@ const productSchema = new mongoose.Schema({
         required: false,
         index: true,
     },
+    comments: [
+        {
+            userId: { type: String },
+            name: { type: String },
+            rating: { type: Number, min: 1, max: 5 },
+            text: { type: String },
+            createdAt: { type: Date, default: Date.now },
+        }
+    ],
     createdAt: {
         type: Date,
         default: Date.now,

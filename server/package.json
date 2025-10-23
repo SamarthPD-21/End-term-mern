@@ -8,6 +8,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
+  "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "start": "node index.js"
   },
   "dependencies": {
@@ -25,5 +26,11 @@
     "razorpay": "^2.9.6",
     "stripe": "^18.5.0",
     "validator": "^13.15.15"
+  }
+  ,
+  "devDependencies": {
+    "jest": "^29.6.4",
+    "supertest": "^6.3.3",
+    "mongodb-memory-server": "^8.12.3"
   }
 }

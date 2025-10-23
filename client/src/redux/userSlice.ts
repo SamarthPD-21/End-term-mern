@@ -72,8 +72,43 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUser(state, action: PayloadAction<UserState>) {
-      return action.payload;
+    // Accept partial updates and merge with existing state so callers
+    // that provide only some fields (eg. cartdata) don't wipe other fields
+    // like profileImage or isAdmin by replacing the whole state.
+    // This merge is defensive: it only overwrites when the incoming value
+    // is not undefined. This prevents accidental clears when callers send
+    // objects missing optional properties.
+    setUser(state, action: PayloadAction<Partial<UserState> | unknown>) {
+      const payload = action.payload ?? {};
+  const pl = payload as Record<string, unknown>;
+  const incomingObj = (pl.user && typeof pl.user === 'object') ? (pl.user as Record<string, unknown>) : (payload as Record<string, unknown>);
+
+      const next: UserState = { ...state };
+
+      if (incomingObj == null || typeof incomingObj !== 'object') return next;
+
+      // DEBUG: Log incoming partials during development to trace unexpected clears
+      try {
+        // Only log during development to avoid console noise in production
+        if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
+          const incomingProfile = typeof incomingObj['profileImage'] === 'string' ? incomingObj['profileImage'] : undefined;
+          console.log("[userSlice:setUser] incoming keys:", Object.keys(incomingObj), "incoming.profileImage:", incomingProfile, "current.profileImage:", state.profileImage);
+        }
+      } catch {
+        // ignore logging errors
+      }
+
+  if ('name' in incomingObj) next.name = typeof incomingObj['name'] === 'string' ? incomingObj['name'] as string : null;
+  if ('email' in incomingObj) next.email = typeof incomingObj['email'] === 'string' ? incomingObj['email'] as string : null;
+  if ('isAdmin' in incomingObj) next.isAdmin = typeof incomingObj['isAdmin'] === 'boolean' ? incomingObj['isAdmin'] as boolean : null;
+  if ('profileImage' in incomingObj) next.profileImage = typeof incomingObj['profileImage'] === 'string' ? incomingObj['profileImage'] as string : null;
+  if ('cartdata' in incomingObj) next.cartdata = Array.isArray(incomingObj['cartdata']) ? (incomingObj['cartdata'] as unknown as CartItem[]) : [];
+  if ('wishlistdata' in incomingObj) next.wishlistdata = Array.isArray(incomingObj['wishlistdata']) ? incomingObj['wishlistdata'] as unknown as Array<{ id: string; name: string; price: number }> : null;
+  if ('orderdata' in incomingObj) next.orderdata = Array.isArray(incomingObj['orderdata']) ? incomingObj['orderdata'] as unknown as Array<{ id: string; name: string; price: number }> : null;
+  if ('addressdata' in incomingObj) next.addressdata = Array.isArray(incomingObj['addressdata']) ? incomingObj['addressdata'] as unknown as Array<AddressData> : null;
+
+      return next;
     },
     resetUser() {
       return initialState;
