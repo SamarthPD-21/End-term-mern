@@ -113,7 +113,13 @@ const AuthModal: FC<AuthModalProps> = ({ open, onClose }) => {
       // no full page reload — Redux state updated and UI will respond
     } catch (err) {
       console.error(err);
-      setError("Authentication failed");
+      // Try to show server-provided error message when available
+      const anyErr = err as any;
+      let message = "Authentication failed";
+      if (anyErr?.response?.data?.error) message = String(anyErr.response.data.error);
+      else if (anyErr?.response?.data?.message) message = String(anyErr.response.data.message);
+      else if (anyErr?.message) message = String(anyErr.message);
+      setError(message);
     } finally {
       setLoading(false);
     }

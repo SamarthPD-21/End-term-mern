@@ -30,12 +30,17 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // create a safe userName to satisfy any existing unique index on userName
+    const localPart = String(email).split("@")[0]
+    const safeUserName = localPart || (String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now())
+
     // Create user and set isAdmin when email matches configured admin
     const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
       isAdmin: email === ADMIN_EMAIL,
+      userName: safeUserName,
     });
 
     const token = await generateToken(newUser._id);

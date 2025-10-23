@@ -28,7 +28,7 @@ const Navbar = () => {
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-11/12 px-4">
       {/* Outer Rounded Container */}
-      <div className="bg-[#4c8380] rounded-xl shadow-md flex items-center justify-between px-6 py-3">
+      <div className="bg-[#4c8380] rounded-xl shadow-md flex items-center justify-between px-5 py-2">
         {/* Logo */}
         <div className="flex items-center space-x-3 animate-float">
           <Image
