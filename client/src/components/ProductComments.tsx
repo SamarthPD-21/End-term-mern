@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import Image from 'next/image';
 import { postProductComment } from "@/lib/Product";
 import axios from "axios";
 import { getCurrentUser } from "@/lib/User";
@@ -149,8 +150,7 @@ export default function ProductComments({ productId }: { productId: string }) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
                     {c.profileImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.profileImage} alt={c.name || 'user'} className="w-10 h-10 rounded-full object-cover" />
+                      <Image src={c.profileImage} alt={c.name || 'user'} width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-700">{(c.name || 'U').split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
                     )}

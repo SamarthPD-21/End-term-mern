@@ -65,27 +65,27 @@ const Navbar = () => {
           {/* Right-side: Profile circle (always visible) */}
           <Link href="/profile" className="mr-2">
             <div title={user?.name ?? "Profile"} className="animate-pop hover:scale-105">
-              {user?.profileImage ? (
-                // Use plain img to avoid next/image remote config issues
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.profileImage}
-                  alt={user.name ?? "profile"}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              ) : (
-                <div className="profile-circle">
-                  {user?.name
-                    ? user.name
-                        .split(" ")
-                        .map((s) => s[0])
-                        .slice(0, 2)
-                        .join("")
-                        .toUpperCase()
-                    : (user?.email || "U").charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
+                {user?.profileImage ? (
+                  <Image
+                    src={user.profileImage}
+                    alt={user.name ?? "profile"}
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="profile-circle">
+                    {user?.name
+                      ? user.name
+                          .split(" ")
+                          .map((s) => s[0])
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase()
+                      : (user?.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
           </Link>
 
           {/* Mobile Hamburger */}

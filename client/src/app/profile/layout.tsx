@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from 'next/image';
 import { usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -51,8 +52,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
             <div className="relative group">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-white/20 flex items-center justify-center text-xl font-bold">
                 {user.profileImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={user.profileImage} alt={user.name || 'profile'} className="w-full h-full object-cover" />
+                  <Image src={user.profileImage} alt={user.name || 'profile'} width={80} height={80} className="w-full h-full object-cover" />
                 ) : (
                   initials
                 )}

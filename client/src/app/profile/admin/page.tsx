@@ -9,6 +9,7 @@ import Spinner from '@/components/Spinner';
 import CategorySelect from '@/components/CategorySelect';
 import { toast as rtToast } from 'react-toastify';
 import { Dialog, Transition } from '@headlessui/react';
+import Image from 'next/image';
 
 export default function AdminPanel() {
   const user = useSelector((s: RootState) => s.user);
@@ -224,6 +225,8 @@ export default function AdminPanel() {
               {previewUrl && (
                 <div className="mt-2">
                   <div className="text-xs text-gray-500 mb-1">Preview</div>
+                  {/* previewUrl is a blob/object URL. keep plain img for local preview */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={previewUrl} alt="preview" className="w-36 h-36 object-cover rounded border shadow-sm" />
                 </div>
               )}
@@ -252,7 +255,7 @@ export default function AdminPanel() {
             {!loadingList && products.length === 0 && <div className="text-sm text-gray-500">No products yet.</div>}
             {products.map((p, i) => (
               <div key={p._id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition transform-gpu" style={{ animation: `listItemFade 320ms ease ${i * 30}ms both` }}>
-                <img src={p.image || '/images/placeholder.png'} alt={p.name} className="w-20 h-20 object-cover rounded transition-transform hover:scale-105" />
+                <Image src={p.image || '/images/placeholder.png'} alt={p.name} width={80} height={80} className="w-20 h-20 object-cover rounded transition-transform hover:scale-105" />
                 <div className="flex-1">
                   <div className="font-medium">{p.name}</div>
                   <div className="text-xs text-gray-500">{p.category} • ₹{p.price}</div>
@@ -301,7 +304,13 @@ export default function AdminPanel() {
                 {modalProduct && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <img src={previewUrl || modalProduct.image || '/images/placeholder.png'} alt={modalProduct.name} className="w-full h-56 object-cover rounded" />
+                      {previewUrl ? (
+                        // previewUrl is a blob/object URL; use plain img for local preview
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={previewUrl} alt={modalProduct.name} className="w-full h-56 object-cover rounded" />
+                      ) : (
+                        <Image src={modalProduct.image || '/images/placeholder.png'} alt={modalProduct.name} width={600} height={280} className="w-full h-56 object-cover rounded" />
+                      )}
                     </div>
                     <div>
                       <div className="font-medium">{modalProduct.name}</div>
