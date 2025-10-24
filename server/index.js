@@ -8,6 +8,9 @@ dotenv.config({ path: './.env' });
 // App Config
 const port = process.env.PORT || 5000;
 
+// Log important env at startup to help diagnose CORS/cookie issues in deployed environments
+console.log('SERVER STARTUP: NODE_ENV=', process.env.NODE_ENV, 'CLIENT_URL=', process.env.CLIENT_URL, 'PORT=', process.env.PORT);
+
 // Start server after DB connection to avoid Mongoose buffering timeouts
 const startServer = async () => {
     try {

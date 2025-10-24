@@ -102,7 +102,11 @@ export const signin = async (req, res) => {
 
   const out = user.toObject();
   delete out.password;
-  return res.status(200).json({ message: "Login successful", user: out });
+  // Also return the token in the response body to help debugging/deployed clients
+  // (we still set the httpOnly cookie; returning the token is a convenience for
+  //  troubleshooting cross-site cookie issues). Remove this in production if you
+  //  prefer stricter httpOnly-only token handling.
+  return res.status(200).json({ message: "Login successful", user: out, token });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Error signing in" });
