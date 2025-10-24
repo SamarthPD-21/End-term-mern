@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import confetti from "canvas-confetti";
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
@@ -68,16 +67,7 @@ export default function ProductCard({
       }
 
       setNotice("Added to cart");
-      // rich confetti effect (canvas-confetti)
-      try {
-        confetti({
-          particleCount: 40,
-          spread: 60,
-          origin: { y: 0.4 },
-        });
-      } catch {
-        // ignore if confetti not available
-      }
+      // no confetti: rely on toast/visual feedback only
     } catch (err) {
       console.error("addToCart error:", err);
       setNotice("Add to cart failed");

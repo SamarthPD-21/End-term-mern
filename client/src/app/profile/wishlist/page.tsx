@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import confetti from "canvas-confetti";
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
@@ -104,9 +103,7 @@ export default function WishlistPage() {
 
     // Optimistic: remove from local UI immediately and trigger confetti
     setLocalWishlist((prev) => prev.filter((x) => String(x.productId || x.id) !== String(pid)));
-    try {
-      confetti({ particleCount: 30, spread: 60, origin: { y: 0.4 } });
-    } catch {}
+    // no confetti: rely on optimistic UI and toast feedback
 
     try {
       const res = await fetch(`${API}/api/cart`, {
