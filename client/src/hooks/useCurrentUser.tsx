@@ -2,11 +2,13 @@
 
 import { setUser } from '@/redux/userSlice';
 import { getCurrentUser } from '@/lib/User';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 export default function useCurrentUser() {
     const dispatch = useDispatch();
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -14,23 +16,28 @@ export default function useCurrentUser() {
                 // If response is falsy (not authenticated), do nothing. We don't want
                 // to force a redirect from a globally-run loader — letting pages decide
                 // when to require auth.
-                if (!response) return;
-
-                dispatch(
-                    setUser({
-                        name: response.name,
-                        email: response.email,
-                        isAdmin: response.isAdmin ?? false,
-                        cartdata: response.cartdata,
-                        wishlistdata: response.wishlistdata,
-                        orderdata: response.orderdata,
-                        addressdata: response.addressdata,
-                        profileImage: response.profileImage || null,
-                    })
-                );
+                if (response) {
+                    dispatch(
+                        setUser({
+                            name: response.name,
+                            email: response.email,
+                            // keep isAdmin explicit from server (default false)
+                            isAdmin: response.isAdmin ?? false,
+                            cartdata: response.cartdata,
+                            wishlistdata: response.wishlistdata,
+                            orderdata: response.orderdata,
+                            addressdata: response.addressdata,
+                            profileImage: response.profileImage || null,
+                        })
+                    );
+                }
             } catch (error) {
                 // don't redirect on errors; log for debugging
-            console.debug("useCurrentUser: could not fetch user", error);
+                // keep silent in production
+                // eslint-disable-next-line no-console
+                console.debug("useCurrentUser: could not fetch user", error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -49,4 +56,6 @@ export default function useCurrentUser() {
             document.removeEventListener('visibilitychange', onVisibility);
         };
     }, [dispatch]);
+
+    return loading;
 }

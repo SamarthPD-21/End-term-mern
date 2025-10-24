@@ -47,14 +47,18 @@ export const uploadProfileImageThunk = createAsyncThunk(
   async (file: File, { rejectWithValue }) => {
     try {
       const data = await apiUploadProfileImage(file);
-      // API returns { message, image, user }
+      // API may return either: { message, image, user } or { message, image }
+      // Normalize to either return the full user object (when provided) or
+      // a plain string containing the image URL. Returning a plain string
+      // for the image makes reducer handling simpler and avoids accidental
+      // overwrites of other user fields (like isAdmin).
       const d = data as unknown;
       if (d && typeof d === "object") {
         const od = d as Record<string, unknown>;
         if (od.user !== undefined) return od.user as unknown;
-        return { image: typeof od.image === "string" ? od.image : undefined };
+        if (typeof od.image === "string") return od.image;
       }
-      return { image: undefined };
+      return undefined;
     } catch (err) {
       const e = err as unknown;
       let payload: unknown = { message: String(e) };
@@ -176,31 +180,44 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(uploadProfileImageThunk.fulfilled, (state, action: PayloadAction<unknown>) => {
-      // If the thunk returned a user object, map it into state
-      const payload = action.payload as unknown;
-      if (payload && typeof payload === 'object') {
+      // Handle three possible payload shapes from the thunk:
+      // 1) undefined/null -> nothing to do
+      // 2) string -> image URL, update profileImage only
+      // 3) object -> full user object (map fields) but preserve existing isAdmin
+      const payload = action.payload;
+      if (payload == null) return;
+
+      if (typeof payload === "string") {
+        state.profileImage = payload;
+        return;
+      }
+
+      if (typeof payload === "object") {
         const p = payload as Record<string, unknown>;
+        // If server returned a full user object, map values but preserve isAdmin
         if (p.name !== undefined) {
+          const preservedIsAdmin = typeof p.isAdmin === 'boolean' ? p.isAdmin : (state.isAdmin ?? null);
           return {
             name: typeof p.name === "string" ? p.name : null,
             email: typeof p.email === "string" ? p.email : null,
-            profileImage: typeof p.profileImage === "string" ? p.profileImage : null,
-            cartdata: Array.isArray(p.cartdata) ? (p.cartdata as unknown as CartItem[]) : [],
+            isAdmin: preservedIsAdmin,
+            profileImage: typeof p.profileImage === 'string' ? p.profileImage : state.profileImage ?? null,
+            cartdata: Array.isArray(p.cartdata) ? (p.cartdata as unknown as CartItem[]) : state.cartdata ?? [],
             wishlistdata: Array.isArray(p.wishlistdata)
               ? (p.wishlistdata as unknown as Array<{ id: string; name: string; price: number }>)
-              : null,
+              : state.wishlistdata ?? null,
             orderdata: Array.isArray(p.orderdata)
               ? (p.orderdata as unknown as Array<{ id: string; name: string; price: number }>)
-              : null,
+              : state.orderdata ?? null,
             addressdata: Array.isArray(p.addressdata)
               ? (p.addressdata as unknown as Array<AddressData>)
-              : null,
+              : state.addressdata ?? null,
           } as UserState;
         }
-      }
-      // otherwise payload might be just the image string
-      if (typeof payload === 'string') {
-        state.profileImage = payload;
+        // fallback: if object contains image key but not full user
+        if (typeof p.image === 'string') {
+          state.profileImage = p.image;
+        }
       }
     });
   },

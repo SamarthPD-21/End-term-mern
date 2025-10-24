@@ -16,12 +16,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-[#fcede1]">
+      <body className="antialiased">
         <ReactReduxProvider>
-          <div className="page-container">
-          <Navbar />
-            <main className="main-content">{children}</main>
-          <Footer />
+          {/* Global gradient background to match About page */}
+          <div className="min-h-screen bg-gradient-to-b from-[#FFECE0] via-[#EAB4B4] to-[#FFECE0]">
+            <div className="page-container">
+              <Navbar />
+              <main className="main-content">{children}</main>
+              <Footer />
+            </div>
           </div>
         </ReactReduxProvider>
       </body>

@@ -1,246 +1,195 @@
-import Link from "next/link";
+"use client";
+import React from "react";
 import Image from "next/image";
 
-export default function About() {
-  const exportProducts = [
-      { name: "Leather Goods", href: "/products/leather" },
-      { name: "Copper Products", href: "/products/copper" },
-      { name: "Imitation Jewelry", href: "/products/imitation-jewelry" },
-      { name: "Handicrafts", href: "/products/handicrafts" },
-      { name: "Sustainable Products", href: "/products/sustainable" },
-    ];
-  
-    const trustFeatures = [
-      {
-        title: "End-to-End Export Support",
-        description: "From documentation to doorstep delivery",
-      },
-      {
-        title: "Certified & Compliant",
-        description: "REACH, RoHS, CE, FSSAI, BIS (where applicable)",
-      },
-      {
-        title: "Custom Design & Private Label",
-        description: "Tailored for global retailers and brands",
-      },
-      {
-        title: "Ethical & Sustainable Sourcing",
-        description: "Supporting artisans and eco-friendly practices",
-      },
-      {
-        title: "Eco-Friendly Packaging",
-        description: "Prioritising sustainability at every step",
-      },
-      {
-        title: "Timely Delivery & Quality Assurance",
-        description: "Trusted across EU, US, Middle East, and Africa",
-      },
-    ];
-  
-    return (
-  <div className="bg-spdBackground">
-        {/* Hero Section */}
-        <section className="relative h-screen overflow-hidden">
-          {/* Background Image with Overlay */}
-          <div className="absolute inset-0">
-            <div className="w-full h-full">
-              <div className="w-full h-full bg-gradient-to-b from-neutral-600 to-transparent"></div>
+
+function HeroSection() {
+  return (
+    <section
+      id="home"
+      className="relative w-full h-[680px] overflow-hidden"
+    >
+      {/* Render hero image directly from public/about */}
+      <div className="absolute inset-0 -z-10">
+        <Image src="/about/hero.png" alt="About hero" fill className="object-cover" priority />
+      </div>
+
+      {/* subtle gradient overlay to match tone */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-transparent flex items-center">
+        <div className="max-w-6xl mx-auto px-6 w-full">
+          <div className="flex flex-col items-center justify-center text-center py-16 -mt-4 md:-mt-8 lg:-mt-12">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#AFD8D1] leading-tight drop-shadow-lg">
+                About Spd Global Pvt Ltd
+              </h1>
+              <p className="text-[24px] text-white/90 mt-6 max-w-2xl">
+                Where Indian Craft Meets Global Standards
+              </p>
             </div>
-          </div>
-  
-          {/* Hero Content */}
-          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-            <h1 className="font-bold text-4xl md:text-6xl lg:text-7xl mb-6 max-w-6xl"
-              style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}>
-                  About SPD Global
-            </h1>
-            <p className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-veblyssTextLight mb-12 max-w-4xl"
-              style={{ color: "#FFECE0", fontFamily: "Open Sans" }}>
-              Where Indian Craft Meets Global Standards
-            </p>
-          </div>
-        </section>
-  
-        {/* About Us Section */}
-        <section className="bg-veblyssSecondary py-16">
-          <div className="mx-auto pl-6">
-            <div className="flex flex-col lg:flex-row items-start gap-12">
-              {/* Content */}
-              <div className="lg:w-1/2 space-y-8">
-                <h2 className="font-bold text-4xl lg:text-5xl"
-                style={{ color: "#368581", fontFamily: "Playfair Display" }}>
-                  About us
-                </h2>
-                <div className="space-y-6">
-                  <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                At SPD Global, we are committed to delivering handpicked,
-                    high-quality products to global markets. From artisan-made
-                    leather goods to eco-conscious lifestyle products, we blend
-                    Indian tradition with international taste, ensuring every
-                    shipment meets global quality, compliance, and design
-                    expectations.
-                  </p>
-                  <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                We specialize in the global trade of premium-quality Imitation
-                Jewelry, Genuine Leather Products, Handicrafts & Home Décor,
-                and Copper Products from India. Our team bridges tradition and
-                trend, ensuring that our clients receive products that are
-                stylish, durable, and competitively priced—backed by industry
-                certifications and international standards.
-                  </p>
-                </div>
-              </div>
-  
-              {/* Image */}
-              <div className="lg:w-1/2">
-                <div className="w-full h-96 bg-gray-300 rounded-l-3xl"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-  
-        {/* Additional About Section */}
-        <section className="bg-veblyssSecondary py-16">
-          <div className="mx-auto pr-6">
-            <div className="flex flex-col lg:flex-row items-start gap-12">
-              {/* Image */}
-              <div className="lg:w-1/2">
-                <div className="w-full h-96 bg-gray-300 rounded-r-3xl"></div>
-              </div>
-  
-              {/* Content */}
-              <div className="lg:w-1/2 space-y-8">
-                <div className="space-y-6">
-                  <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                    Our operations are guided by integrity, compliance,
-                    sustainability, and customer-centrality, ensuring that every
-                    transaction builds long-term trust and mutual growth.
-                  </p>
-                  <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                    Based in Bengaluru, India, the heart of traditional
-                    craftsmanship and modern manufacturing, VeBlyss is driven by a
-                    mission to make India&apos;s best products accessible to the world.
-                    Our team specializes in curating, sourcing, and exporting
-                    leather goods, copper ware, imitation jewelry, handicrafts,
-                    and sustainable products to clients across the globe.
-                  </p>
-                  <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                    We don&apos;t just export products we deliver excellence,
-                    compliance, and reliability in every container.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-  
-        {/* Vision & Mission Teaser */}
-        <section className="bg-veblyssSecondary py-16">
-          <div className="mx-auto pl-6">
-            <div className="flex flex-col lg:flex-row items-start gap-12">
-              {/* Content */}
-              <div className="lg:w-1/2 space-y-8">
-                <div className="space-y-6">
-                  <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                    Our vision at VeBlyss Global, our vision is to become a global
-                    leader in exporting India&apos;s finest fashion, lifestyle, and
-                    essential products. We are committed to showcasing the
-                    richness of Indian craftsmanship and quality—delivering
-                    unmatched trust, authenticity, and value to clients across the
-                    world.
-                  </p>
-                  <p className="font-opensans text-lg text-veblyssText leading-relaxed">
-                    Our mission is to aim to empower Indian artisans and
-                    manufacturers by extending their reach to international
-                    markets. By delivering high-quality, sustainable, and
-                    ethically sourced products, we strive to represent the heart
-                    of Indian heritage while building long-term partnerships
-                    grounded in integrity and excellence.
-                  </p>
-                </div>
-              </div>
-  
-              {/* Image */}
-              <div className="lg:w-1/2">
-                <div className="w-full h-96 bg-gray-300 rounded-l-3xl"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-  
-        {/* What We Export */}
-        <section className="bg-veblyssSecondary py-16">
-          <div className="mx-auto px-4">
-            <h2 className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary text-center mb-12"
-                style={{ color: "#368581", fontFamily: "Playfair Display" }}>
-              What we export
-            </h2>
-  
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-              {exportProducts.map((product, index) => (
-                <div
-                  key={index}
-                  className="bg-veblyssBackground rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="h-56 bg-gray-300 relative overflow-hidden">
-                    <div className="w-full h-full bg-gray-300"></div>
-                  </div>
-                  <div className="p-6 text-center">
-                    <h3 className="font-playfair font-semibold text-lg text-veblyssText mb-4">
-                      {product.name}
-                    </h3>
-                    <Link
-                      href={product.href}
-                      className="inline-block text-sm px-4 py-2 rounded-xl hover:bg-opacity-90 transition-all duration-300 font-bold"
-                      style={{
-                        backgroundColor: "#368581",
-                        color: "#FAF9F6",
-                        fontFamily: "Open Sans",
-                      }}
-                    >
-                      Check More
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-  
-        {/* Why Clients Trust VeBlyss */}
-        <section className="bg-veblyssSecondary py-16 relative">
-          <div className="absolute inset-0 opacity-25">
+        </div>
+      </div>
+    </section>
+  );
+}
+function WhoWeAreSection() {
+  return (
+    <section id="about" className="py-16 lg:pr-16">
+      <div className="max-w-screen">
+        <div className="flex flex-col lg:flex-row items-center gap-8">
+          <div className="lg:max-w-[50%] lg:w-[50%] lg:p-0 p-4 w-full">
             <Image
-              src="https://api.builder.io/api/v1/image/assets/TEMP/0ac27a7b365479a91ab00d23f9044cda020cccb7?width=2880"
-              alt=""
-              className="w-full h-full object-cover"
-              fill
+              src="/about/whoweare.png"
+              alt="Spd Global Artisan Heritage"
+              height={706}
+              width={460}
+              className="lg:rounded-r-3xl rounded-3xl w-full h-[250px] md:h-[500px] object-cover shadow-lg"
             />
           </div>
-  
-          <div className="relative z-10 container mx-auto px-4">
-            <h2 className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary text-center mb-12"
-                style={{ color: "#368581", fontFamily: "Playfair Display" }}>
-              Why Clients Trust VeBlyss
+
+          <div className="flex-1 px-2 text-center flex flex-col md:pr-14 gap-4 md:text-left">
+            <h2 className="text-2xl md:text-3xl font-bold text-[var(--button-red)]">
+              Who we are
             </h2>
-  
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {trustFeatures.map((feature, index) => (
+            <p className="mt-4 m-4 text-justify text-[16px] text-gray-700">
+              At Spd Global, we are committed to delivering handpicked,
+              high-quality products to global markets. From artisan-made leather
+              goods to Eco-conscious lifestyle products, we blend{" "}
+              <strong>Indian tradition with international taste</strong>,
+              ensuring every shipment meets global{" "}
+              <strong>quality, compliance, and design standards.</strong>
+            </p>
+            <p className="mt-4 m-4 text-justify text-[16px] text-gray-700">
+              Based in Bengaluru, India – the heart of traditional craftsmanship
+              and modern manufacturing – our team bridges{" "}
+              <strong>heritage and trend</strong>. We specialize in curating,
+              sourcing, and exporting{" "}
+              <strong>
+                leather goods, copper ware, imitation jewelry, handicrafts, and
+                sustainable products
+              </strong>{" "}
+              to clients worldwide.
+            </p>
+            <p className="mt-4 mx-4 text-justify text-[16px] text-gray-700">
+              We don’t just export products{" "}
+              <strong>
+                we deliver excellence, reliability, and compliance in every
+                container.
+              </strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function VisionAndMissionSection() {
+  return (
+    <section>
+      <div className="max-w-screen flex flex-col items-center py-16 md:px-6">
+        <div className="flex flex-col items-center justify-center container gap-8">
+          <h2 className="font-poppins md:text-4xl text-3xl text-[var(--button-red)] font-bold">
+            Our Vision & Mission
+          </h2>
+          <div className="flex flex-col md:flex-row gap-12 md:gap-24 md:mr-12 md:ml-16 items-center justify-center md:items-start">
+            <div className="text-gray-700 md:max-w-[50%] md:p-0 p-4 text-left flex flex-col gap-12">
+              <h3 className="font-extrabold text-2xl md:text-start text-center">Our Vision</h3>
+
+              <p className="text-[16px] text-justify">
+                To be a global leader in exporting Indian-crafted fashion,
+                lifestyle, and essential products — showcasing the best of
+                quality and craftsmanship while delivering trust and value to
+                every client.
+              </p>
+            </div>
+            <div className="text-gray-700 md:max-w-[50%] md:p-0 p-4 pr-0 text-left flex flex-col gap-12">
+              <h3 className="font-extrabold text-center md:text-start text-2xl">Our Mission</h3>
+
+              <ul className="list-disc list-inside space-y-2 text-[16px] ">
+                <li>
+                  To empower Indian artisans and manufacturers by giving them
+                  global reach.
+                </li>
+                <li>
+                  To deliver high-quality, sustainable, and ethically sourced
+                  products from India.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MarketsWeServeSection() {
+  return (
+    <section>
+      <div className="max-w-screen flex flex-col items-center py-16 px-6">
+        <div className="flex flex-col items-center justify-center container gap-8">
+          <h2 className="font-poppins md:text-4xl text-[26px] text-[var(--button-red)] font-bold">
+            Markets We Serve
+          </h2>
+          <div className="flex flex-col w-full items-center">
+            <Image
+              src="/about/marketsweserve.jpg"
+              alt="Map and markets we serve - international export destinations"
+              height={400}
+              width={650}
+              className="w-[80%] md:w-[50%] object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CertificationsSection() {
+  const certifications: string[] = [
+    "Import Export Code (IEC)",
+    "APEDA/ Spices Board/ Tea Board/ FIEO",
+    "GST, DGFT, MSME Udyam",
+    "CE, RoHS, FDA, ISO, REACH",
+    "PhytoSanitary Certificate",
+    "Certifiate of Origin (COO)",
+  ];
+  return (
+    <section>
+      <div className="max-w-screen flex flex-col items-center py-16 px-6">
+        <div className="flex flex-col items-center justify-center container gap-8">
+          <h2 className="font-poppins md:text-4xl text-[26px] text-center text-[var(--button-red)] font-bold">
+            Certifications & Legal Compliance
+          </h2>
+          <div className="flex flex-col w-full items-center">
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {certifications.map((text, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-gray-100 p-4 rounded-lg text-center text-lg font-medium text-gray-800 shadow-md"
                 >
-                  <h3 className="font-playfair font-bold text-xl text-veblyssText text-center mb-4">
-                    {feature.title}
-                  </h3>
-                  <p className="font-opensans text-veblyssText text-center">
-                    {feature.description}
-                  </p>
+                  {text}
                 </div>
               ))}
             </div>
           </div>
-        </section>
+        </div>
       </div>
-    );
+    </section>
+  );
+}
+
+export default function About() {
+  return (
+    <section className="min-h-screen">
+      <HeroSection />
+      <div className="relative z-10 bg-gradient-to-b from-[#FFECE0] via-[#EAB4B4] to-[#FFECE0]">
+        <WhoWeAreSection />
+        <VisionAndMissionSection />
+        <MarketsWeServeSection />
+        <CertificationsSection />
+      </div>
+    </section>
+  );
 }

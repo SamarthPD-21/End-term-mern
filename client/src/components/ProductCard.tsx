@@ -15,6 +15,9 @@ interface Product {
   name: string;
   price: number;
   image?: string;
+  description?: string;
+  rating?: number;
+  reviewCount?: number;
   _id?: string;
 }
 
@@ -76,7 +79,7 @@ export default function ProductCard({
   return (
     <div
       key={product.id}
-      className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300 animate-pop"
+      className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-2xl transition-transform duration-300 transform hover:-translate-y-1"
     >
       <div className="h-96 bg-gray-300 relative overflow-hidden">
         <div className="image-overlay pointer-events-none" />
@@ -90,9 +93,37 @@ export default function ProductCard({
       </div>
 
       <div className="p-8 text-center">
-        <h3 className="font-playfair font-semibold text-2xl text-spdText mb-4">
+        <h3 className="font-playfair font-semibold text-2xl text-spdText mb-2">
           {product.name}
         </h3>
+
+        <div className="text-sm text-gray-600 mb-4">
+          {/* show brief description if available */}
+          <span className="block truncate">{product.description ?? "High-quality product for global markets"}</span>
+        </div>
+
+        {/* Rating */}
+        <div className="flex items-center justify-center gap-2 mb-4" aria-hidden={product.rating == null}>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: 5 }).map((_, i) => {
+              const r = Math.round(product.rating ?? 0);
+              return (
+                <svg
+                  key={i}
+                  className={`w-4 h-4 ${i < r ? "text-yellow-400" : "text-gray-300"}`}
+                  viewBox="0 0 24 24"
+                  fill={i < r ? "currentColor" : "none"}
+                  stroke="currentColor"
+                >
+                  <path strokeWidth={0} d="M12 .587l3.668 7.431L24 9.748l-6 5.847 1.419 8.268L12 19.771 4.581 23.863 6 15.595 0 9.748l8.332-1.73z" />
+                </svg>
+              );
+            })}
+          </div>
+          {product.reviewCount != null && (
+            <span className="text-sm text-gray-500">{Number(product.rating ?? 0).toFixed(1)} • {product.reviewCount}</span>
+          )}
+        </div>
 
         <div className="mb-6">
           <span className="text-2xl font-bold">₹{product.price.toFixed(2)}</span>
@@ -101,16 +132,16 @@ export default function ProductCard({
         <div className="flex justify-center gap-4">
           <button
             onClick={() => addToCart(product)}
-            className="bg-spdPrimary text-spdTextLight font-opensans font-bold text-lg px-6 py-3 rounded-xl hover:bg-opacity-90 transition-all duration-300"
-            style={{ backgroundColor: "#368581", color: "#FAF9F6" }}
+            className="bg-[#368581] text-white font-opensans font-bold text-lg px-6 py-3 rounded-xl hover:brightness-95 transition-all duration-300 disabled:opacity-60"
             disabled={loadingAdd}
+            aria-label={`Add ${product.name} to cart`}
           >
             {loadingAdd ? "Adding..." : "Add to Cart"}
           </button>
 
           <Link
             href={`/products/${product.id || product._id}`}
-            className="inline-block text-spdPrimary font-opensans font-bold text-lg px-4 py-3 rounded-xl border animate-zoom-hover"
+            className="inline-block text-[#368581] font-opensans font-bold text-lg px-4 py-3 rounded-xl border border-[#E6F6F3] hover:shadow-md transition-all duration-300"
           >
             Check More
           </Link>

@@ -1,51 +1,46 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Products() {
   const productCategories = [
-      {
-        name: "Leather Products",
-        href: "/products/leather",
-        description:
-          "Premium leather goods crafted with traditional techniques and modern design for global markets.",
-        image:
-          '/images/placeholder.png',
-      },
-      {
-        name: "Copper Products",
-        href: "/products/copper",
-        description:
-          "Pure copper items combining Ayurvedic wisdom with contemporary functionality for health-conscious consumers.",
-        image:
-          '/images/placeholder.png',
-      },
-      {
-        name: "Imitation Jewelry",
-        href: "/products/imitation-jewelry",
-        description:
-          "Elegant Indian jewelry designs capturing timeless beauty with contemporary fashion trends.",
-        image:
-          '/images/placeholder.png',
-      },
-      {
-        name: "Indian Handicrafts",
-        href: "/products/handicrafts",
-        description:
-          "Authentic handicrafts preserving centuries-old traditions and showcasing master artisan skills.",
-        image:
-          '/images/placeholder.png',
-      },
-      {
-        name: "Sustainable Products",
-        href: "/products/sustainable",
-        description:
-          "Eco-friendly products made from sustainable materials supporting environmental conservation.",
-        image:
-          '/images/placeholder.png',
-      },
-    ];
+    {
+      name: "Leather Products",
+      href: "/products/leather",
+      description:
+        "Premium leather goods crafted with traditional techniques and modern design for global markets.",
+      image: "/home/Leather.png",
+    },
+    {
+      name: "Copper Products",
+      href: "/products/copper",
+      description:
+        "Pure copper items combining Ayurvedic wisdom with contemporary functionality for health-conscious consumers.",
+      image: "/home/Copper.png",
+    },
+    {
+      name: "Imitation Jewelry",
+      href: "/products/imitation-jewelry",
+      description:
+        "Elegant Indian jewelry designs capturing timeless beauty with contemporary fashion trends.",
+      image: "/home/imitation.png",
+    },
+    {
+      name: "Indian Handicrafts",
+      href: "/products/handicrafts",
+      description:
+        "Authentic handicrafts preserving centuries-old traditions and showcasing master artisan skills.",
+      image: "/home/Handicrafts.png",
+    },
+    {
+      name: "Sustainable Products",
+      href: "/products/sustainable",
+      description:
+        "Eco-friendly products made from sustainable materials supporting environmental conservation.",
+      image: "/home/Sustainable.png",
+    },
+  ];
   
     const features = [
       {
@@ -70,31 +65,32 @@ export default function Products() {
       },
     ];
   
-    return (
-      <div>
-        {/* Hero Section */}
-        <section className="relative h-screen overflow-hidden">
-          <div className="absolute inset-0">
-          <div className="w-full h-full">
-            <div className="w-full h-full bg-gradient-to-b from-neutral-600 to-transparent"></div>
-          </div>
+  return (
+    <div>
+      {/* Hero Section using site hero image to match home/about */}
+      <section className="relative h-[640px] md:h-[700px] overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <Image src="/home/hero.png" alt="Products hero" fill className="object-cover" priority />
         </div>
-  
-          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-            <h1
-              className="font-bold text-4xl md:text-6xl lg:text-7xl mb-6 max-w-6xl transition-all duration-700 ease-out"
-              style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}
-            >
-              Our Product Range
-            </h1>
-            <h2
-              className="font-bold text-4xl lg:text-5xl text-center mb-12"
-              style={{ color: "#368581", fontFamily: "Playfair Display" }}
-            >
-              Product Categories
-            </h2>
-          </div>
-        </section>
+
+        {/* slightly stronger overlay for products hero */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/10"></div>
+
+        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
+          <h1
+            className="font-bold text-4xl md:text-6xl lg:text-7xl mb-6 max-w-6xl transition-all duration-700 ease-out"
+            style={{ color: "#FFECE0", fontFamily: "Playfair Display" }}
+          >
+            Our Product Range
+          </h1>
+          <h2
+            className="font-bold text-4xl lg:text-5xl text-center mb-12"
+            style={{ color: "#368581", fontFamily: "Playfair Display" }}
+          >
+            Product Categories
+          </h2>
+        </div>
+      </section>
   
         {/* Product Categories Grid */}
         <section className="py-20" style={{ backgroundColor: "#FFECE0" }}>
@@ -125,9 +121,9 @@ export default function Products() {
                       <Image
                         src={category.image}
                         alt={category.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                        layout="fill"
-                        objectFit="cover"
+                        fill
+                        className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-out"
+                        priority={index < 2}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>

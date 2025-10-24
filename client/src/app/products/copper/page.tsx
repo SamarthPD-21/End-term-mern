@@ -48,11 +48,11 @@ export default function CopperProducts() {
   <div className="bg-spdBackground">
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="w-full h-full">
-            <div className="w-full h-full bg-gradient-to-b from-neutral-600 to-transparent"></div>
-          </div>
+        {/* hero image for category */}
+        <div className="absolute inset-0 -z-10">
+          <Image src="/images/products/copper/hero.png" alt="Copper hero" fill className="object-cover" priority />
         </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/10" />
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
           <h1 className="font-playfair font-bold text-4xl md:text-6xl lg:text-7xl text-spdSecondary mb-6 max-w-6xl"

@@ -53,3 +53,45 @@ export const uploadProfileImage = async (file: File) => {
     throw error;
   }
 };
+
+export const promoteToAdmin = async (email: string, reason?: string) => {
+  try {
+    const payload: Record<string, unknown> = { email };
+    if (reason) payload.reason = reason;
+    const response = await api.post("/api/admin/make-admin", payload);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const demoteFromAdmin = async (email: string, reason?: string) => {
+  try {
+    const payload: Record<string, unknown> = { email };
+    if (reason) payload.reason = reason;
+    const response = await api.post("/api/admin/remove-admin", payload);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchAllUsers = async () => {
+  try {
+    const response = await api.get('/api/admin/users');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchAdminAudits = async (page = 1, pageSize = 50, q?: string) => {
+  try {
+    const params: Record<string, unknown> = { page, pageSize };
+    if (q) params.q = q;
+    const response = await api.get('/api/admin/audits', { params });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
