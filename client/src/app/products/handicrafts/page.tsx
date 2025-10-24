@@ -14,7 +14,20 @@ export default function IndianHandicrafts() {
     (async () => {
       try {
         const data = await getProducts("handicrafts");
-        if (mounted && data?.products) setProducts(data.products.map((p: any) => ({ id: p._id, name: p.name, price: p.price ?? 0, image: p.image })));
+        if (mounted && data?.products) {
+          setProducts(
+            data.products.map((p: any) => ({
+              id: p._id,
+              name: p.name,
+              price: p.price ?? 0,
+              image: p.image || p.images?.[0] || "/images/placeholder.png",
+              rating: p.rating ?? p.avgRating ?? 0,
+              reviewCount: p.reviewCount ?? (p.reviews ? p.reviews.length : 0),
+              description: p.description ?? undefined,
+              launchAt: p.launchAt ?? undefined,
+            }))
+          );
+        }
       } catch (err) {
         console.error("Failed to load handicrafts products", err);
       }
@@ -37,11 +50,11 @@ export default function IndianHandicrafts() {
     "Export Companies",
   ];
 
-  const relatedCategories = [
-    { name: "Leather Products", href: "/products/leather" },
-    { name: "Copper Products", href: "/products/copper" },
-    { name: "Imitation Jewelry", href: "/products/imitation-jewelry" },
-    { name: "Sustainable Products", href: "/products/sustainable" },
+  const relatedCategories: { name: string; href: string; image?: string }[] = [
+    { name: "Leather Products", href: "/products/leather", image: "/images/products/leather/hero.png" },
+    { name: "Copper Products", href: "/products/copper", image: "/images/products/copper/hero.png" },
+    { name: "Imitation Jewelry", href: "/products/imitation-jewelry", image: "/images/products/jwelery/hero.png" },
+    { name: "Sustainable Products", href: "/products/sustainable", image: "/images/products/sustainable/hero.png" },
   ];
 
   return (
@@ -93,7 +106,7 @@ export default function IndianHandicrafts() {
           {/* Dynamic Grid for Any Number of Products */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
-              <ProductCard key={product.id} product={{ id: product.id, name: product.name, price: product.price ?? 0, image: product.image }} setNotice={() => {}} />
+              <ProductCard key={product.id} product={product} setNotice={() => {}} />
             ))}
           </div>
         </div>
@@ -167,10 +180,10 @@ export default function IndianHandicrafts() {
                 <div className="h-64 bg-gray-300 relative overflow-hidden">
                   <div className="w-full h-full bg-gray-300">
                     <Image
-                      src='/images/placeholder.png'
+                      src={category.image ?? '/images/placeholder.png'}
                       alt={category.name}
                       className="object-cover w-full h-full"
-                      layout="fill"
+                      fill
                     />
                   </div>
                 </div>

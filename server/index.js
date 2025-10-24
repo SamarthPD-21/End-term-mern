@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/mongodb.js';
 import app from './app.js';
 import User from './models/user.model.js';
+import Product from './models/product.model.js';
 
 dotenv.config({ path: './.env' });
 
@@ -38,6 +39,50 @@ const startServer = async () => {
             } catch (err) {
                 console.error('Error ensuring admin user exists:', err)
             }
+                // Start periodic launch processor: move wishlisted scheduled products to carts when their launchAt passes
+                try {
+                    const processLaunches = async () => {
+                        try {
+                            const now = new Date();
+                            const toLaunch = await Product.find({ launched: false, launchAt: { $lte: now } }).lean();
+                            if (!toLaunch || toLaunch.length === 0) return;
+                            console.log('Processing launches for', toLaunch.length, 'products');
+
+                            for (const p of toLaunch) {
+                                try {
+                                    // mark product launched
+                                    await Product.updateOne({ _id: p._id }, { $set: { launched: true } });
+
+                                    // find users who have this product in wishlistdata
+                                    const users = await User.find({ 'wishlistdata.productId': String(p._id) });
+                                    for (const u of users) {
+                                        // ensure not already in cart
+                                        const inCart = (u.cartdata || []).some(ci => String(ci.productId) === String(p._id));
+                                        if (!inCart) {
+                                            u.cartdata = u.cartdata || [];
+                                            u.cartdata.push({ productId: String(p._id), quantity: 1, name: p.name, price: p.price, image: p.image });
+                                        }
+                                        // remove from wishlist
+                                        u.wishlistdata = (u.wishlistdata || []).filter(w => String(w.productId) !== String(p._id));
+                                        await u.save();
+                                        console.log(`Moved product ${p._id} to cart for user ${u.email}`);
+                                    }
+                                } catch (innerErr) {
+                                    console.error('Error processing single launch for product', p._id, innerErr);
+                                }
+                            }
+                        } catch (err) {
+                            console.error('processLaunches error:', err);
+                        }
+                    };
+
+                    // Run immediately on startup and then every minute
+                    processLaunches();
+                    setInterval(processLaunches, 60 * 1000);
+                    console.log('Scheduled launch processor started (runs every 60s)');
+                } catch (scheduleErr) {
+                    console.error('Failed to start launch processor:', scheduleErr);
+                }
         })
     } catch (err) {
         console.error('Failed to start server due to DB connection error:', err)

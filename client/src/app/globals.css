@@ -105,6 +105,9 @@
 }
 .group:hover .image-overlay { opacity: 1; }
 
+/* Replaced visual confetti effect with canvas-confetti for richer, hardware-accelerated particles.
+   Keep minimal CSS here; confetti/puff are generated on the canvas by the library. */
+
 /* Profile avatar circle */
 .profile-circle {
   width: 2.5rem; /* 40px */

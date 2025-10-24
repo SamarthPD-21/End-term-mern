@@ -34,7 +34,6 @@ export default function useCurrentUser() {
             } catch (error) {
                 // don't redirect on errors; log for debugging
                 // keep silent in production
-                // eslint-disable-next-line no-console
                 console.debug("useCurrentUser: could not fetch user", error);
             } finally {
                 setLoading(false);
@@ -44,10 +43,9 @@ export default function useCurrentUser() {
         fetchUser();
 
         // Re-run when window regains focus so profile image updates if user changed
-        const onFocus = () => fetchUser();
-        const onVisibility = () => {
-            if (document.visibilityState === 'visible') fetchUser();
-        };
+        // Use stable named functions so lint doesn't complain about missing deps
+        function onFocus() { fetchUser(); }
+        function onVisibility() { if (document.visibilityState === 'visible') fetchUser(); }
         window.addEventListener('focus', onFocus);
         document.addEventListener('visibilitychange', onVisibility);
 

@@ -99,3 +99,41 @@ export const deleteUserAddress = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const addWishlistItem = async (req, res) => {
+  const { userId } = req;
+  const { productId, name, price, image } = req.body || {};
+  if (!productId) return res.status(400).json({ error: 'productId required' });
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.wishlistdata = user.wishlistdata || [];
+    const exists = user.wishlistdata.some(w => String(w.productId) === String(productId));
+    if (!exists) {
+      user.wishlistdata.push({ productId: String(productId), name: name || '', price: Number(price) || 0, image: image || '' });
+      await user.save();
+    }
+    const safe = await User.findById(userId).select('-password');
+    return res.status(200).json({ user: safe });
+  } catch (err) {
+    console.error('addWishlistItem error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const removeWishlistItem = async (req, res) => {
+  const { userId } = req;
+  const { productId } = req.params || {};
+  if (!productId) return res.status(400).json({ error: 'productId required' });
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.wishlistdata = (user.wishlistdata || []).filter(w => String(w.productId) !== String(productId));
+    await user.save();
+    const safe = await User.findById(userId).select('-password');
+    return res.status(200).json({ user: safe });
+  } catch (err) {
+    console.error('removeWishlistItem error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};

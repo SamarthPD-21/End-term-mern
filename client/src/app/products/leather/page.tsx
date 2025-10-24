@@ -17,7 +17,20 @@ export default function LeatherProducts() {
     (async () => {
       try {
         const data = await getProducts("leather");
-        if (mounted && data?.products) setProducts(data.products.map((p: any) => ({ id: p._id, name: p.name, price: p.price ?? 0, image: p.image })));
+        if (mounted && data?.products) {
+          setProducts(
+            data.products.map((p: any) => ({
+              id: p._id,
+              name: p.name,
+              price: p.price ?? 0,
+              image: p.image || p.images?.[0] || "/images/placeholder.png",
+              rating: p.rating ?? p.avgRating ?? 0,
+              reviewCount: p.reviewCount ?? (p.reviews ? p.reviews.length : 0),
+              description: p.description ?? undefined,
+              launchAt: p.launchAt ?? undefined,
+            }))
+          );
+        }
       } catch (err) {
         console.error("Failed to load leather products", err);
       }
@@ -40,11 +53,11 @@ export default function LeatherProducts() {
     "Export Companies",
   ];
 
-  const relatedCategories = [
-    { name: "Copper Products", href: "/products/copper" },
-    { name: "Imitation Jewelry", href: "/products/imitation-jewelry" },
-    { name: "Handicrafts", href: "/products/handicrafts" },
-    { name: "Sustainable Products", href: "/products/sustainable" },
+  const relatedCategories: { name: string; href: string; image?: string }[] = [
+    { name: "Copper Products", href: "/products/copper", image: "/images/products/copper/hero.png" },
+    { name: "Imitation Jewelry", href: "/products/imitation-jewelry", image: "/images/products/jwelery/hero.png" },
+    { name: "Handicrafts", href: "/products/handicrafts", image: "/images/products/handicrafts/hero.png" },
+    { name: "Sustainable Products", href: "/products/sustainable", image: "/images/products/sustainable/hero.png" },
   ];
 
   return (
@@ -168,12 +181,12 @@ export default function LeatherProducts() {
               >
                 <div className="h-64 bg-gray-300 relative overflow-hidden">
                   <div className="w-full h-full bg-gray-300">
-                    <Image
-                      src='/images/placeholder.png'
-                      alt={category.name}
-                      className="object-cover w-full h-full"
-                      layout="fill"
-                    />
+                            <Image
+                              src={category.image ?? '/images/placeholder.png'}
+                              alt={category.name}
+                              className="object-cover w-full h-full"
+                              fill
+                            />
                   </div>
                 </div>
                 <div className="p-6 text-center">

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
  'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -55,12 +54,9 @@ export default function CartPage() {
   // Animation / timing constants (ms)
   const REMOVE_ANIM_MS = 180 // how long before the row is removed from the DOM after starting animation
   const UNDO_WINDOW_MS = 2000 // how long the user has to undo the remove
-  const SLIDE_OUT_MS = 220
   const SLIDE_IN_MS = 280
 
-  // Typed helpers for managing pending removals (keeps casts centralized)
-  type PendingRemovalEntry = { item: CartItemMeta; finalizeTimer: ReturnType<typeof setTimeout> | null }
-  // pendingRemovals is already declared above; we use helper functions to manipulate it
+  // pendingRemovals is already declared below; we use helper functions to manipulate it
 
   function addPendingRemoval(pid: string, item: CartItemMeta, finalizeTimer: ReturnType<typeof setTimeout>) {
     pendingRemovals.current[pid] = { item, finalizeTimer }
@@ -197,8 +193,8 @@ export default function CartPage() {
           body: JSON.stringify({ ids }),
         })
         if (!res.ok) return
-        const json = await res.json()
-        const prods: Array<any> = json.products || []
+  const json = await res.json()
+  const prods: Array<{ _id?: string; productId?: string; quantity?: number }> = json.products || []
         const map: Record<string, number> = {}
         prods.forEach(p => {
           if (!p) return
@@ -228,7 +224,7 @@ export default function CartPage() {
   const [removingRows, setRemovingRows] = useState<Record<string, boolean>>({})
     // rows that were just restored (slide-in animation)
     const [restoringRows, setRestoringRows] = useState<Record<string, boolean>>({})
-    const restoringTimers = useRef<Record<string, number | null>>({})
+  // restoringTimers was unused; removed to silence lint warnings
 
   const updateQuantity = (pid: string, change: number) => {
     const currentQty = localQuantities[pid] || 1

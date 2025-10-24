@@ -72,14 +72,7 @@ export default function Home() {
     },
   ];
 
-  const markets = [
-    "European Union",
-    "United States",
-    "Middle East", 
-    "Africa",
-    "Asia Pacific",
-  ];
-
+  
   return (
     <div>
       {/*Hero Section*/}

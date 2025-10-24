@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 
 type Props = {
   value: string;
@@ -12,13 +11,13 @@ type Props = {
 };
 
 export default function CategorySelect({ value, onChange, options, placeholder, id }: Props) {
-  const opts = options ?? [
+  const opts = useMemo(() => options ?? [
     { value: "leather", label: "Leather" },
     { value: "copper", label: "Copper" },
     { value: "imitation-jewelry", label: "Imitation Jewelry" },
     { value: "handicrafts", label: "Handicrafts" },
     { value: "sustainable", label: "Sustainable" },
-  ];
+  ], [options]);
 
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);

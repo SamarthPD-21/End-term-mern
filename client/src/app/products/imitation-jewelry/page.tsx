@@ -14,7 +14,20 @@ export default function ImitationJewelry() {
     (async () => {
       try {
         const data = await getProducts("imitation-jewelry");
-        if (mounted && data?.products) setProducts(data.products.map((p: any) => ({ id: p._id, name: p.name, price: p.price ?? 0, image: p.image })));
+        if (mounted && data?.products) {
+          setProducts(
+            data.products.map((p: any) => ({
+              id: p._id,
+              name: p.name,
+              price: p.price ?? 0,
+              image: p.image || p.images?.[0] || "/images/placeholder.png",
+              rating: p.rating ?? p.avgRating ?? 0,
+              reviewCount: p.reviewCount ?? (p.reviews ? p.reviews.length : 0),
+              description: p.description ?? undefined,
+              launchAt: p.launchAt ?? undefined,
+            }))
+          );
+        }
       } catch (err) {
         console.error("Failed to load imitation jewelry products", err);
       }
@@ -37,11 +50,11 @@ export default function ImitationJewelry() {
     "Cultural Events",
   ];
 
-  const relatedCategories = [
-    { name: "Leather Products", href: "/products/leather" },
-    { name: "Copper Products", href: "/products/copper" },
-    { name: "Handicrafts", href: "/products/handicrafts" },
-    { name: "Sustainable Products", href: "/products/sustainable" },
+  const relatedCategories: { name: string; href: string; image?: string }[] = [
+    { name: "Leather Products", href: "/products/leather", image: "/images/products/leather/hero.png" },
+    { name: "Copper Products", href: "/products/copper", image: "/images/products/copper/hero.png" },
+    { name: "Handicrafts", href: "/products/handicrafts", image: "/images/products/handicrafts/hero.png" },
+    { name: "Sustainable Products", href: "/products/sustainable", image: "/images/products/sustainable/hero.png" },
   ];
 
   
@@ -99,7 +112,7 @@ export default function ImitationJewelry() {
           {/* Dynamic Grid for Any Number of Products */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
-              <ProductCard key={product.id} product={{ id: product.id, name: product.name, price: product.price ?? 0, image: product.image }} setNotice={() => {}} />
+              <ProductCard key={product.id} product={product} setNotice={() => {}} />
             ))}
           </div>
         </div>
@@ -173,10 +186,10 @@ export default function ImitationJewelry() {
                 <div className="h-64 bg-gray-300 relative overflow-hidden">
                   <div className="w-full h-full bg-gray-300">
                     <Image
-                      src='/images/placeholder.png'
+                      src={category.image ?? '/images/placeholder.png'}
                       alt={category.name}
                       className="object-cover w-full h-full"
-                      layout="fill"
+                      fill
                     />
                   </div>
                 </div>

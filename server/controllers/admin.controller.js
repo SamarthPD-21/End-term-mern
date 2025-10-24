@@ -13,7 +13,7 @@ const uploadToCloudinary = (buffer, folder = "products") =>
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, category, quantity } = req.body;
+    const { name, description, price, category, quantity, launchAt } = req.body;
     if (!name || !description || !price || !category || !quantity) {
       return res.status(400).json({ error: "Missing fields" });
     }
@@ -32,6 +32,13 @@ export const createProduct = async (req, res) => {
     );
     const productId = counter.seq;
 
+    // determine launched status based on launchAt if present
+    let parsedLaunch = null;
+    if (launchAt) {
+      const d = new Date(launchAt);
+      if (!isNaN(d.getTime())) parsedLaunch = d;
+    }
+
     const product = await Product.create({
       name,
       description,
@@ -40,6 +47,8 @@ export const createProduct = async (req, res) => {
       category,
       quantity: Number(quantity),
       productId,
+      launchAt: parsedLaunch || undefined,
+      launched: parsedLaunch ? parsedLaunch <= new Date() : true,
       // record who created this product (if available)
       createdBy: req.userId || req.user?._id || req.user?.id || undefined,
       createdByEmail: req.user?.email || undefined,

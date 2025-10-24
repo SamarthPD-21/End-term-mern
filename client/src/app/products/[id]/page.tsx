@@ -23,6 +23,7 @@ type ProductType = {
   countInStock?: number;
   quantity?: number;
   stock?: number;
+  launchAt?: string | null;
 };
 
 export default function ProductPage(props: unknown) {
@@ -96,6 +97,20 @@ export default function ProductPage(props: unknown) {
     }
   };
 
+  const wishlist = async () => {
+    if (!product) return;
+    try {
+      const payload = { productId: product._id || product.id, name: product.name, price: product.price, image: product.image };
+      const resp = await axios.post(`${API_URL}api/user/wishlist`, payload, { withCredentials: true });
+      const user = resp.data?.user ?? resp.data;
+      if (user) dispatch(setUser(user));
+      alert('Added to wishlist');
+    } catch (err) {
+      console.error('wishlist add error', err);
+      alert('Failed to add to wishlist');
+    }
+  };
+
   if (loading) return <div className="p-12">Loading...</div>;
   if (!product) return <div className="p-12">Product not found</div>;
 
@@ -149,6 +164,11 @@ export default function ProductPage(props: unknown) {
                 <div className="flex items-center gap-1 text-yellow-500 star-pulse">{Array.from({ length: Math.round(avgRating) || 0 }).map((_, i) => <span key={i}>⭐</span>)} </div>
                 <div className="text-sm">{avgRating.toFixed(1)} • {reviewCount} reviews</div>
               </div>
+              {product.launchAt && new Date(product.launchAt) > new Date() && (
+                <div className="inline-block mb-4 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
+                  Launching: {new Date(product.launchAt).toLocaleString()}
+                </div>
+              )}
               <div className="text-lg font-semibold mb-4">Ex-works price: <span className="text-2xl">₹{Number(product.price).toFixed(2)}</span></div>
             </div>
           </div>
@@ -175,7 +195,7 @@ export default function ProductPage(props: unknown) {
             <button onClick={addToCart} disabled={adding || qty > stock} className={`px-6 py-3 rounded-2xl text-lg font-bold shadow-lg transform transition-all ${justAdded ? 'bg-emerald-500 scale-105' : 'bg-[#368581]'}`} style={{ color: '#FAF9F6' }}>
               {adding ? 'Adding...' : (justAdded ? 'Added ✓' : 'Add to Cart')}
             </button>
-            <button className="px-6 py-3 rounded-2xl border font-bold">Wishlist</button>
+            <button onClick={wishlist} className="px-6 py-3 rounded-2xl border font-bold">Wishlist</button>
           </div>
 
           <ProductComments productId={(product._id || product.id) as string} />

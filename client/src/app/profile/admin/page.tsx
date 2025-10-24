@@ -20,6 +20,7 @@ export default function AdminPanel() {
   const [category, setCategory] = useState("");
   const [quantity, setQuantity] = useState<number | string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [launchAt, setLaunchAt] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   const [loadingList, setLoadingList] = useState(false);
@@ -75,6 +76,8 @@ export default function AdminPanel() {
     load();
     loadUsers();
     loadAudits(1);
+    // intentionally run only once on mount; loadAudits is stable within this module
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // audits
@@ -221,6 +224,7 @@ export default function AdminPanel() {
     setImageFile(null);
     setPreviewUrl(null);
     setStatus(null);
+    setLaunchAt(null);
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -262,6 +266,7 @@ export default function AdminPanel() {
       fd.append("price", String(price));
       fd.append("category", String(category));
       fd.append("quantity", String(quantity));
+      if (launchAt) fd.append("launchAt", String(launchAt));
       if (imageFile) fd.append("image", imageFile as Blob, imageFile.name);
 
     await apiCreateProduct(fd);
@@ -300,6 +305,7 @@ export default function AdminPanel() {
     setCategory(p.category || "");
     setQuantity(p.quantity ?? "");
     setImageFile(null);
+    setLaunchAt(p.launchAt ? String(new Date(p.launchAt).toISOString()).slice(0,16) : null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -320,6 +326,7 @@ export default function AdminPanel() {
       fd.append("price", String(price));
       fd.append("category", String(category));
       fd.append("quantity", String(quantity));
+      if (launchAt) fd.append("launchAt", String(launchAt));
       if (imageFile) fd.append("image", imageFile as Blob, imageFile.name);
 
       await apiUpdateProduct(editingId, fd);
@@ -507,6 +514,11 @@ export default function AdminPanel() {
                 <input required aria-label="Product quantity" className="w-full border px-3 py-2 rounded focus:outline-none" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="Quantity (required)" type="number" />
                 {errors.quantity && <div className="text-xs text-red-600 mt-1">{errors.quantity}</div>}
                 {!errors.quantity && <div className="text-xs text-gray-400 mt-1">Quantity is the available stock count (integer).</div>}
+              </div>
+              <div className="col-span-1">
+                <label className="sr-only">Launch time</label>
+                <input aria-label="Launch time" className="w-full border px-3 py-2 rounded focus:outline-none" value={launchAt ?? ''} onChange={(e) => setLaunchAt(e.target.value || null)} placeholder="Optional launch time" type="datetime-local" />
+                <div className="text-xs text-gray-400 mt-1">Optional: schedule product launch (local datetime). Leave empty for immediate availability.</div>
               </div>
             </div>
 

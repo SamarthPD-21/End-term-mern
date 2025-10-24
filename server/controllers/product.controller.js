@@ -6,8 +6,15 @@ export const listProducts = async (req, res) => {
     const { category } = req.query;
     const filter = {};
     if (category) filter.category = category;
-    const products = await Product.find(filter).sort({ createdAt: -1 });
-    return res.status(200).json({ products });
+    const products = await Product.find(filter).sort({ createdAt: -1 }).lean();
+    // enrich with avgRating and reviewCount for list views
+    const enriched = products.map((p) => {
+      const comments = p.comments || [];
+      const reviewCount = comments.length;
+      const avgRating = reviewCount > 0 ? comments.reduce((s, c) => s + (c.rating || 0), 0) / reviewCount : 0;
+      return { ...p, reviewCount, avgRating };
+    });
+    return res.status(200).json({ products: enriched });
   } catch (err) {
     console.error("listProducts error:", err);
     return res.status(500).json({ error: "Server error" });

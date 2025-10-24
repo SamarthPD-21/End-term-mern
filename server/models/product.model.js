@@ -30,6 +30,15 @@ const productSchema = new mongoose.Schema({
         required: false,
         index: true,
     },
+    // Optional scheduled launch datetime. If set and in the future, `launched` will be false until that time.
+    launchAt: {
+        type: Date,
+        required: false,
+    },
+    launched: {
+        type: Boolean,
+        default: true,
+    },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
     createdByEmail: { type: String, required: false },
     comments: [
