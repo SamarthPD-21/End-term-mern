@@ -11,7 +11,8 @@ function HeroSection() {
     >
       {/* Render hero image directly from public/about */}
       <div className="absolute inset-0 -z-10">
-        <Image src="/about/hero.png" alt="About hero" fill className="object-cover" priority />
+        {/* Use existing public assets so hero loads in production */}
+        <Image src="/home/about.png" alt="About hero" fill className="object-cover" priority />
       </div>
 
       {/* subtle gradient overlay to match tone */}
@@ -37,7 +38,7 @@ function WhoWeAreSection() {
         <div className="flex flex-col lg:flex-row items-center gap-8">
           <div className="lg:max-w-[50%] lg:w-[50%] lg:p-0 p-4 w-full">
             <Image
-              src="/about/whoweare.png"
+              src="/home/about.png"
               alt="Spd Global Artisan Heritage"
               height={706}
               width={460}
@@ -132,7 +133,7 @@ function MarketsWeServeSection() {
           </h2>
           <div className="flex flex-col w-full items-center">
             <Image
-              src="/about/marketsweserve.jpg"
+              src="/images/background.png"
               alt="Map and markets we serve - international export destinations"
               height={400}
               width={650}

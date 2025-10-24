@@ -11,7 +11,9 @@ import productRouter from './routes/product.routes.js';
 const app = express();
 
 app.use(express.json());
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000', credentials: true }));
+// Allow dynamic origins (echo back request origin) to support deployed client domains.
+// In production you should set process.env.CLIENT_URL to the exact origin(s) you want to allow.
+app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 
 app.get('/', (req, res) => res.send('Hello World!'));

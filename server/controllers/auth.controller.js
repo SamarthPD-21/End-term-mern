@@ -25,7 +25,6 @@ export const signup = async (req, res) => {
     if (password.length < 6) {
       return res.status(400).json({ error: "Weak password. It must be at least 6 characters long." });
     }
-    console.log("Incoming request body:", req.body);
     // Password hashing
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);

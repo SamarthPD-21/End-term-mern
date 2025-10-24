@@ -30,6 +30,8 @@ const productSchema = new mongoose.Schema({
         required: false,
         index: true,
     },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+    createdByEmail: { type: String, required: false },
     comments: [
         {
             userId: { type: String },
