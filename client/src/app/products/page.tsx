@@ -69,7 +69,7 @@ export default function Products() {
     <div>
       {/* Hero Section using site hero image to match home/about */}
       <section className="relative h-[640px] md:h-[700px] overflow-hidden">
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0">
           <Image src="/home/hero.png" alt="Products hero" fill className="object-cover" priority />
         </div>
 
@@ -175,7 +175,7 @@ export default function Products() {
           <div className="container mx-auto px-4">
             <h2
               className="font-bold text-4xl lg:text-5xl text-center mb-16 transition-all duration-700 ease-out"
-              style={{ color: "#368581", fontFamily: "Playfair Display" }}
+              style={{ color: "#792727", fontFamily: "Playfair Display" }}
             >
               Why Choose SPD Global
             </h2>

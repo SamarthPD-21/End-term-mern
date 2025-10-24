@@ -48,7 +48,7 @@ export default function IndianHandicrafts() {
   <div className="bg-spdBackground">
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0">
           <Image src="/images/products/handicrafts/hero.png" alt="Handicrafts hero" fill className="object-cover" priority />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/10" />

@@ -49,7 +49,7 @@ export default function CopperProducts() {
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         {/* hero image for category */}
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 ">
           <Image src="/images/products/copper/hero.png" alt="Copper hero" fill className="object-cover" priority />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/10" />

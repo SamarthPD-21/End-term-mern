@@ -7,12 +7,12 @@ function HeroSection() {
   return (
     <section
       id="home"
-      className="relative w-full h-[680px] overflow-hidden"
+      className="relative w-full h-[688px] overflow-hidden"
     >
       {/* Render hero image directly from public/about */}
-      <div className="absolute inset-0 -z-10">
+      <div className="relative w-full h-[687.7290649414062px] overflow-hidden">
         {/* Use existing public assets so hero loads in production */}
-        <Image src="/home/about.png" alt="About hero" fill className="object-cover" priority />
+        <Image src="/about/hero.png" alt="About hero" fill className="w-full h-full object-cover object-center" priority />
       </div>
 
       {/* subtle gradient overlay to match tone */}
@@ -133,7 +133,7 @@ function MarketsWeServeSection() {
           </h2>
           <div className="flex flex-col w-full items-center">
             <Image
-              src="/images/background.png"
+              src="/about/marketsweserve.jpg"
               alt="Map and markets we serve - international export destinations"
               height={400}
               width={650}
