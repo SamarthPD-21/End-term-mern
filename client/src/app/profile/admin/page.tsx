@@ -58,6 +58,7 @@ export default function AdminPanel() {
       setLoadingList(false);
     } catch (err) {
       console.error("Failed to load products", err);
+      rtToast.error('Failed to load products');
       setLoadingList(false);
     }
   };
@@ -69,6 +70,7 @@ export default function AdminPanel() {
       setUsers(res?.users ?? []);
     } catch (err) {
       console.error('Failed to fetch users', err);
+      rtToast.error('Failed to load users');
     }
   };
 
@@ -96,6 +98,7 @@ export default function AdminPanel() {
       setAuditPage(res.page || page);
     } catch (err) {
       console.error('Failed to load audits', err);
+      rtToast.error('Failed to load audit logs');
     }
   };
 

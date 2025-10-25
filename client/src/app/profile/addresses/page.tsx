@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { addUserAddress, deleteUserAddress } from "@/lib/User";
+import { notify } from '@/lib/toast';
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setAddresses, removeAddress } from "@/redux/userSlice";
@@ -26,7 +27,7 @@ export default function AddressPage() {
   // ✅ Handle add address
   const handleAdd = async () => {
     if (!street || !city || !stateName || !postalCode || !country || !phone) {
-      alert("Please fill in all fields.");
+      notify.info("Please fill in all fields.");
       return;
     }
 
@@ -41,7 +42,7 @@ export default function AddressPage() {
     );
 
     if (isDuplicate) {
-      alert("This address already exists.");
+      notify.info("This address already exists.");
       return;
     }
 
@@ -70,7 +71,7 @@ export default function AddressPage() {
       // Reset form + close modal
     } catch (err) {
       console.error("Error adding address:", err);
-      alert("Failed to add address");
+      notify.error("Failed to add address");
     } finally {
       setLoading(false);
     }
@@ -83,6 +84,7 @@ export default function AddressPage() {
       await deleteUserAddress(id);
     } catch (err) {
       console.error("Error removing address:", err);
+      notify.error('Failed to remove address');
     }
   };
 

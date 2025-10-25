@@ -7,6 +7,7 @@ import { getProductById } from "@/lib/Product";
 import ProductComments from "@/components/ProductComments";
 import axios from "axios";
 import { getCurrentUser } from "@/lib/User";
+import { notify } from '@/lib/toast';
 import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/userSlice";
 
@@ -40,6 +41,7 @@ export default function ProductPage(props: unknown) {
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
+  const [wishAdded, setWishAdded] = useState(false);
   const dispatch = useDispatch();
   // build a small client-only helper to navigate back to the category listing
   const goToCategory = (category?: string) => {
@@ -64,6 +66,7 @@ export default function ProductPage(props: unknown) {
         setReviewCount(Number(res.reviewCount ?? 0));
       } catch (err) {
         console.error(err);
+        notify.error('Failed to load product details');
       } finally {
         setLoading(false);
       }
@@ -91,7 +94,7 @@ export default function ProductPage(props: unknown) {
       setTimeout(() => setJustAdded(false), 900);
     } catch (err) {
       console.error('add to cart error', err);
-      alert('Add to cart failed');
+      notify.error('Add to cart failed');
     } finally {
       setAdding(false);
     }
@@ -104,10 +107,10 @@ export default function ProductPage(props: unknown) {
       const resp = await axios.post(`${API_URL}api/user/wishlist`, payload, { withCredentials: true });
       const user = resp.data?.user ?? resp.data;
       if (user) dispatch(setUser(user));
-      alert('Added to wishlist');
+      notify.success('Added to wishlist');
     } catch (err) {
       console.error('wishlist add error', err);
-      alert('Failed to add to wishlist');
+      notify.error('Failed to add to wishlist');
     }
   };
 
@@ -192,10 +195,29 @@ export default function ProductPage(props: unknown) {
           </div>
 
           <div className="flex items-center gap-4">
-            <button onClick={addToCart} disabled={adding || qty > stock} className={`px-6 py-3 rounded-2xl text-lg font-bold shadow-lg transform transition-all ${justAdded ? 'bg-emerald-500 scale-105' : 'bg-[#368581]'}`} style={{ color: '#FAF9F6' }}>
-              {adding ? 'Adding...' : (justAdded ? 'Added ✓' : 'Add to Cart')}
-            </button>
-            <button onClick={wishlist} className="px-6 py-3 rounded-2xl border font-bold">Wishlist</button>
+            {product.launchAt && new Date(product.launchAt) > new Date() ? (
+              // Product not launched: show a single animated Add to Wishlist primary CTA
+              <button
+                onClick={async () => {
+                  await wishlist()
+                  // micro-interaction
+                  setWishAdded(true)
+                  setTimeout(() => setWishAdded(false), 900)
+                }}
+                className={`px-6 py-3 rounded-2xl text-lg font-bold shadow-lg transform transition-all ${wishAdded ? 'bg-yellow-500 scale-105' : 'bg-yellow-500 hover:scale-105'}`}
+                style={{ color: '#fff' }}
+                aria-label="Add to wishlist"
+              >
+                <span className={`${wishAdded ? 'opacity-90' : ''}`}>{wishAdded ? 'Saved ✓' : 'Add to Wishlist'}</span>
+              </button>
+            ) : (
+              <>
+                <button onClick={addToCart} disabled={adding || qty > stock} className={`px-6 py-3 rounded-2xl text-lg font-bold shadow-lg transform transition-all ${justAdded ? 'bg-emerald-500 scale-105' : 'bg-[#368581]'}`} style={{ color: '#FAF9F6' }}>
+                  {adding ? 'Adding...' : (justAdded ? 'Added ✓' : 'Add to Cart')}
+                </button>
+                <button onClick={wishlist} className="px-6 py-3 rounded-2xl border font-bold">Wishlist</button>
+              </>
+            )}
           </div>
 
           <ProductComments productId={(product._id || product.id) as string} />

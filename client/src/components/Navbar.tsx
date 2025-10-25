@@ -33,11 +33,13 @@ const Navbar = () => {
           <Image
             src="/images/logo.png"
             alt="SPD Global Logo"
-            width={40}
-            height={40}
+            className="rounded-full"
+            width={44}
+            height={44}
+            priority={true}
           />
           <div className="leading-tight text-white">
-            <h1 className="text-lg font-bold tracking-wide">SPD GLOBAL</h1>
+            <h1 className="text-lg font-bold tracking-wide">Spd Global</h1>
             <p className="text-xs font-light italic">
               Lifestyle. Fashion. Home & Beyond
             </p>

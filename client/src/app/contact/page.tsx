@@ -7,8 +7,8 @@ export default function Contact() {
     <div className="min-h-screen">
       {/* Hero Section using site hero image for consistent look */}
       <section className="relative h-96 md:h-[560px] overflow-hidden">
-        <div className="absolute inset-0 -z-10">
-          <Image src="/home/hero.png" alt="Contact hero" fill className="object-cover" priority />
+        <div className="absolute inset-0">
+          <Image src="/images/contact.png" alt="Contact hero" fill className="object-cover" priority />
         </div>
 
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-transparent"></div>

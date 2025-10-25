@@ -2,8 +2,38 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import ProductCard from '@/components/ProductCard';
+import type { Product as ProductType } from '@/components/ProductCard';
+import { notify } from '@/lib/toast';
 
 export default function Products() {
+  type LaunchProduct = { _id?: string; id?: string; launchAt?: string | null; name?: string; price?: number; image?: string; description?: string };
+  const [launching, setLaunching] = useState<LaunchProduct[]>([]);
+  const [, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    // fetch launching-soon products ordered earliest -> latest
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/';
+    let mounted = true;
+    (async () => {
+      try {
+        const resp = await axios.get(`${API_URL}api/products?launchingSoon=1`);
+        if (!mounted) return;
+        const products = resp.data?.products || resp.data || [];
+        setLaunching((products as unknown[]).map((p) => {
+          const pp = p as LaunchProduct;
+          return { ...pp, id: pp._id || pp.id };
+        }));
+      } catch (err) {
+        console.error('Failed to load launching soon products', err);
+        notify.error('Failed to load launching soon products');
+      }
+    })();
+    return () => { mounted = false };
+  }, []);
+
   const productCategories = [
     {
       name: "Leather Products",
@@ -91,6 +121,9 @@ export default function Products() {
           </h2>
         </div>
       </section>
+
+      {/* Launching Soon Section (moved below Explore Products) */}
+
   
         {/* Product Categories Grid */}
         <section className="py-20" style={{ backgroundColor: "#FFECE0" }}>
@@ -169,6 +202,28 @@ export default function Products() {
             </div>
           </div>
         </section>
+
+          {/* Launching Soon Section */}
+          {launching && launching.length > 0 && (
+          <section className="py-12 relative" style={{ backgroundColor: '#FFECE0', borderLeft: '6px solid #F0C987' }}>
+              <div className="container mx-auto px-4">
+                <h2 className="font-bold text-3xl lg:text-4xl text-center mb-8" style={{ color: '#792727', fontFamily: 'Playfair Display' }}>
+                  Launching Soon
+                </h2>
+
+                {/* Horizontal carousel for launching soon products */}
+                <div className="-mx-4 px-4 overflow-x-auto no-scrollbar">
+                  <div className="flex gap-6 py-4 snap-x snap-mandatory">
+                    {launching.map((p: LaunchProduct, idx: number) => (
+                      <div key={p.id || p._id || idx} className="snap-center min-w-[260px] max-w-[320px]">
+                        <ProductCard product={p as ProductType} setNotice={setNotice} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
   
         {/* Why Choose Us */}
         <section className="py-20" style={{ backgroundColor: "#FFECE0" }}>

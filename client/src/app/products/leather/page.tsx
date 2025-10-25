@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import { getProducts } from "@/lib/Products";
+import { notify } from '@/lib/toast'
 
 
 export default function LeatherProducts() {
@@ -33,6 +34,7 @@ export default function LeatherProducts() {
         }
       } catch (err) {
         console.error("Failed to load leather products", err);
+        notify.error('Failed to load leather products');
       }
     })();
     return () => { mounted = false };

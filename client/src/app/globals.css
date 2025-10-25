@@ -51,6 +51,22 @@
 .animate-pop { animation: popIn 0.45s cubic-bezier(.2,.9,.3,1) both; }
 .animate-slide-up { animation: slideUp 0.5s ease-out both; }
 
+/* Slide-out / slide-in used for cart row removals to give a friendlier animation */
+@keyframes slideOutRightFade {
+  0% { opacity: 1; transform: translateX(0) scale(1) rotate(0deg); }
+  60% { opacity: 0.9; transform: translateX(10px) scale(0.985) rotate(-1deg); }
+  100% { opacity: 0; transform: translateX(40px) scale(0.95) rotate(-3deg); }
+}
+
+@keyframes slideInRight {
+  0% { opacity: 0; transform: translateX(30px) scale(0.97) rotate(2deg); }
+  60% { opacity: 1; transform: translateX(-6px) scale(1.01) rotate(-0.5deg); }
+  100% { opacity: 1; transform: translateX(0) scale(1) rotate(0deg); }
+}
+
+.animate-slide-out { animation: slideOutRightFade 220ms cubic-bezier(.2,.9,.3,1) both; }
+.animate-slide-in { animation: slideInRight 280ms cubic-bezier(.2,.9,.3,1) both; }
+
 /* Hover zoom (only on devices that support hover) */
 @media (hover: hover) and (pointer: fine) {
   .animate-zoom-hover { transition: transform 300ms ease; }

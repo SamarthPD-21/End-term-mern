@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getProducts } from "@/lib/Products";
+import { notify } from '@/lib/toast'
 import ProductCard from "@/components/ProductCard";
 
 export default function CopperProducts() {
@@ -30,6 +31,7 @@ export default function CopperProducts() {
         }
       } catch (err) {
         console.error("Failed to load copper products", err);
+        notify.error('Failed to load copper products');
       }
     })();
     return () => { mounted = false };

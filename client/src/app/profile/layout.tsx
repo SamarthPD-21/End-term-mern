@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { logout } from "@/lib/Auth";
+import { notify } from '@/lib/toast'
 import { resetUser } from "@/redux/userSlice";
 import { useState } from "react";
 import useCurrentUser from "@/hooks/useCurrentUser";
@@ -29,6 +30,19 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
       await logout(); // API call to log out
     } catch (e) {
       console.error(e);
+      // friendly message for logout failure
+      try {
+        const maybe: unknown = e;
+        if (typeof maybe === 'object' && maybe !== null) {
+          const resp = maybe as { response?: { status?: number } };
+          if (resp.response?.status === 401) notify.info('Not logged in');
+          else notify.error('Failed to sign out');
+        } else {
+          notify.error('Failed to sign out');
+        }
+      } catch {
+        notify.error('Failed to sign out');
+      }
     } finally {
       dispatch(resetUser()); // Reset Redux user state
       setBusy(false);

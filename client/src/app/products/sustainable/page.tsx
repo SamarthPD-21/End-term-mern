@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getProducts } from "@/lib/Products";
+import { notify } from '@/lib/toast'
 import ProductCard from "@/components/ProductCard";
 
 export default function SustainableProducts() {
@@ -31,6 +32,7 @@ export default function SustainableProducts() {
         }
       } catch (err) {
         console.error("Failed to load sustainable products", err);
+        notify.error('Failed to load sustainable products');
       }
     })();
     return () => { mounted = false };

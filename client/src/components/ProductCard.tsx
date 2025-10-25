@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "@/redux/userSlice";
 import { getCurrentUser } from "@/lib/User";
+import { notify } from '@/lib/toast'
 import axios from "axios";
+import type { RootState } from "@/redux/store";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
 
-interface Product {
+export interface Product {
   id: string;
   name: string;
   price: number;
@@ -32,6 +34,14 @@ export default function ProductCard({
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [wishAnim, setWishAnim] = useState(false);
   const dispatch = useDispatch();
+  const user = useSelector((s: RootState) => s.user);
+  // detect if this product is already in the user's cart and normalize quantity
+  type CartLike = { productId?: string; id?: string; _id?: string; product?: { _id?: string }; quantity?: number; qty?: number };
+  const cartEntry = ((user?.cartdata ?? []) as CartLike[]).find((c) => {
+    const pid = String(product.id ?? product._id);
+    return String(c?.productId ?? c?.id ?? c?._id ?? c?.product?._id) === pid;
+  });
+  const cartQty = cartEntry ? Number(cartEntry.quantity ?? cartEntry.qty ?? 0) : 0;
 
   const addToCart = async (p: Product) => {
   setLoadingAdd(true);
@@ -67,15 +77,48 @@ export default function ProductCard({
       }
 
       setNotice("Added to cart");
+      notify.success('Added to cart');
       // no confetti: rely on toast/visual feedback only
     } catch (err) {
       console.error("addToCart error:", err);
+      notify.error('Add to cart failed');
       setNotice("Add to cart failed");
     } finally {
   setLoadingAdd(false);
   setTimeout(() => setNotice(null), 3000);
     }
   };
+
+  // Launch countdown state (for products with launchAt)
+  const [remaining, setRemaining] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null;
+    function updateRemaining() {
+      if (!product.launchAt) return;
+      const now = new Date();
+      const la = new Date(product.launchAt as string);
+      const diff = la.getTime() - now.getTime();
+      if (diff <= 0) {
+        setRemaining({ days: 0, hours: 0, mins: 0, secs: 0 });
+        return;
+      }
+      const secs = Math.floor(diff / 1000);
+      const days = Math.floor(secs / (24 * 3600));
+      const hours = Math.floor((secs % (24 * 3600)) / 3600);
+      const mins = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      setRemaining({ days, hours, mins, secs: s });
+    }
+
+    if (product.launchAt) {
+      updateRemaining();
+      timer = setInterval(updateRemaining, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [product.launchAt]);
 
   const wishlistProduct = async (p: Product) => {
     // animate heart briefly
@@ -88,10 +131,12 @@ export default function ProductCard({
         dispatch(setUser(user));
       }
       setNotice("Added to wishlist");
+      notify.success('Added to wishlist');
       setTimeout(() => setNotice(null), 3000);
       setTimeout(() => setWishAnim(false), 700);
     } catch (err) {
       console.error('wishlist error', err);
+      notify.error('Failed to add to wishlist');
       setNotice('Failed to add to wishlist');
       setTimeout(() => setNotice(null), 3000);
       setWishAnim(false);
@@ -133,6 +178,28 @@ export default function ProductCard({
           }
           return null;
         })()}
+
+        {/* Countdown display (days/hours/mins/secs) for launching products */}
+        {product.launchAt && (new Date(product.launchAt) > new Date()) && (
+          <div className="mb-4 flex items-center justify-center gap-3 text-sm text-gray-700">
+            <div className="inline-flex items-center gap-2 bg-white/70 px-3 py-1 rounded-md shadow-sm">
+              <div className="text-xs text-gray-500">Days</div>
+              <div className="font-mono font-semibold">{String(remaining.days).padStart(2, '0')}</div>
+            </div>
+            <div className="inline-flex items-center gap-2 bg-white/70 px-3 py-1 rounded-md shadow-sm">
+              <div className="text-xs text-gray-500">Hrs</div>
+              <div className="font-mono font-semibold">{String(remaining.hours).padStart(2, '0')}</div>
+            </div>
+            <div className="inline-flex items-center gap-2 bg-white/70 px-3 py-1 rounded-md shadow-sm">
+              <div className="text-xs text-gray-500">Mins</div>
+              <div className="font-mono font-semibold">{String(remaining.mins).padStart(2, '0')}</div>
+            </div>
+            <div className="inline-flex items-center gap-2 bg-white/70 px-3 py-1 rounded-md shadow-sm">
+              <div className="text-xs text-gray-500">Secs</div>
+              <div className="font-mono font-semibold">{String(remaining.secs).padStart(2, '0')}</div>
+            </div>
+          </div>
+        )}
         <h3 className="font-playfair font-semibold text-2xl text-spdText mb-2">
           {product.name}
         </h3>
@@ -167,6 +234,13 @@ export default function ProductCard({
 
         <div className="mb-6">
           <span className="text-2xl font-bold">₹{product.price.toFixed(2)}</span>
+          {cartQty > 0 && (
+            <div className="mt-2">
+              <Link href="/cart" className="inline-block text-sm bg-green-50 text-green-800 px-2 py-1 rounded-full border border-green-100">
+                In cart ({cartQty})
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-center gap-4 items-center">

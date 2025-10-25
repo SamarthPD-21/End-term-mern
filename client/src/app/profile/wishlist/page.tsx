@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setUser } from "@/redux/userSlice";
 import { getCurrentUser } from "@/lib/User";
+import { notify } from '@/lib/toast'
 
 interface WishlistEntry {
   productId?: string;
@@ -36,6 +37,8 @@ export default function WishlistPage() {
   const [products, setProducts] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(false);
   const [localWishlist, setLocalWishlist] = useState<WishlistEntry[]>(() => wishlistArray);
+
+  type MaybeMessage = { message?: string };
 
   useEffect(() => setLocalWishlist(wishlistArray), [wishlistArray]);
 
@@ -70,6 +73,7 @@ export default function WishlistPage() {
         if (mounted) setProducts(map);
       } catch (e) {
         console.error("Failed to load wishlist products", e);
+        notify.error('Failed to load wishlist items')
       } finally {
         if (mounted) setLoading(false);
       }
@@ -79,6 +83,100 @@ export default function WishlistPage() {
       mounted = false;
     };
   }, [wishlistArray]);
+
+  // Auto-move launched wishlist items to cart once products are loaded.
+  // Runs once per mount (guarded by ranAutoRef).
+  const ranAutoRef = useRef(false);
+  useEffect(() => {
+    if (ranAutoRef.current) return;
+    ranAutoRef.current = true;
+
+    const autoMove = async () => {
+      if (!localWishlist || localWishlist.length === 0) return;
+      const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+
+      for (const entry of localWishlist) {
+        try {
+          const pid = String(entry.productId || entry.id || "");
+          if (!pid) continue;
+          const p = products[pid] as Record<string, unknown> | undefined;
+
+          // If product removed from server, remove from wishlist and notify
+          if (!p) {
+            await handleRemove(pid);
+            notify.info(`${entry.name ?? 'Item'} is no longer available and was removed from your wishlist`);
+            continue;
+          }
+
+          // Determine launched state (launchAt preferred; fallback to createdAt)
+          const launchAtStr = typeof p['launchAt'] === 'string' ? p['launchAt'] : undefined;
+          const createdAtStr = typeof p['createdAt'] === 'string' ? p['createdAt'] : undefined;
+          const launched = launchAtStr ? (new Date(launchAtStr) <= new Date()) : (createdAtStr ? (new Date(createdAtStr) <= new Date()) : true);
+
+          if (!launched) continue;
+
+          // If already in cart, skip
+          const alreadyInCart = (user?.cartdata ?? []).some((c: unknown) => {
+            const it = c as Record<string, unknown>;
+            const cid = it['productId'] ?? it['id'] ?? it['_id'];
+            return String(cid ?? '') === pid;
+          });
+          if (alreadyInCart) {
+            // remove from wishlist because it's already in cart
+            await handleRemove(pid);
+            continue;
+          }
+
+          // Attempt to move to cart
+          // Keep optimistic UI minimal here; we'll refresh server state on success
+          const resp = await fetch(`${API}/api/cart`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId: pid, name: entry.name, price: entry.price ?? 0, image: entry.image ?? '/images/placeholder.png', quantity: 1 }),
+          });
+
+          if (resp.ok) {
+            // refresh user state
+            const me = await getCurrentUser();
+            const u = me?.user ?? me;
+            if (u) dispatch(setUser(u));
+            notify.success(`${entry.name ?? 'Item'} moved to cart`);
+            // remove from local wishlist view
+            setLocalWishlist((prev) => prev.filter((x) => String(x.productId || x.id) !== pid));
+          } else {
+            // parse server message if present
+            let json: unknown = null;
+            try { json = await resp.json(); } catch { /* ignore */ }
+            // handle common statuses
+            if (resp.status === 404) {
+              // product not found — remove from wishlist
+              await handleRemove(pid);
+              notify.info(`${entry.name ?? 'Item'} is no longer available and was removed from your wishlist`);
+            } else if (resp.status === 400 || resp.status === 409 || resp.status === 422) {
+              const reason = (json && typeof json === 'object' && 'message' in json && typeof (json as MaybeMessage).message === 'string') ? (json as MaybeMessage).message : 'Could not move to cart';
+              notify.error(`${entry.name ?? 'Item'}: ${reason}`);
+            } else {
+              notify.error(`Failed to move ${entry.name ?? 'item'} to cart`);
+            }
+          }
+        } catch (err) {
+          console.error('auto-move wishlist error', err);
+          notify.error('Failed to auto-move wishlist items')
+        }
+      }
+    };
+
+    // only run after products have been loaded (products object populated)
+    if (Object.keys(products).length > 0) {
+      autoMove();
+    } else {
+      // fallback: run once after a short delay to allow load effect to populate
+      const t = setTimeout(() => { if (Object.keys(products).length > 0) autoMove(); }, 700);
+      return () => clearTimeout(t);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
 
   const handleRemove = async (id?: string) => {
     if (!id) return;
@@ -93,6 +191,7 @@ export default function WishlistPage() {
       if (u) dispatch(setUser(u));
     } catch (e) {
       console.error(e);
+      notify.error('Failed to remove item from wishlist')
     }
   };
 
@@ -119,6 +218,7 @@ export default function WishlistPage() {
       if (u) dispatch(setUser(u));
     } catch (e) {
       console.error(e);
+      notify.error('Failed to move item to cart')
       // revert optimistic change
       setLocalWishlist((prev) => [entry, ...prev]);
     } finally {
@@ -158,9 +258,6 @@ export default function WishlistPage() {
                   )}
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  {!isLaunched && (
-                    <button onClick={() => handleRemove(pid)} className="text-red-600 text-sm">Remove</button>
-                  )}
                   {isLaunched ? (
                     <button onClick={() => handleMoveToCart(entry)} className="bg-[#368581] text-white px-3 py-1 rounded-md text-sm hover:scale-105 transition-transform">Move to cart</button>
                   ) : (

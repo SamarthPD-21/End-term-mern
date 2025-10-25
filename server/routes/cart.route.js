@@ -39,8 +39,8 @@ router.post('/', async (req, res) => {
 
   let cart = user.cartdata || [];
 
-    // check if product already exists
-    const existingIndex = cart.findIndex(item => item.productId === productId);
+  // check if product already exists (compare as strings to handle ObjectId vs string)
+  const existingIndex = cart.findIndex(item => String(item.productId) === String(productId));
 
     // Check product stock
     const prod = await Product.findOne({ _id: productId }) || await Product.findOne({ productId: Number(productId) });
@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
       const desired = Number(quantity) || 1;
       const finalQty = available == null ? desired : Math.min(desired, available);
       cart.push({
-        productId,
+        productId: String(productId),
         name,
         price,
         image,
@@ -66,6 +66,15 @@ router.post('/', async (req, res) => {
 
     user.cartdata = cart;
     await user.save();
+
+    // If this product was present in the user's wishlist, remove it now so move-from-wishlist is atomic server-side
+    try {
+      user.wishlistdata = (user.wishlistdata || []).filter(w => String(w.productId) !== String(productId));
+      await user.save();
+    } catch (remErr) {
+      // non-fatal: log but continue returning the cart
+      console.error('Failed to remove moved item from wishlist:', remErr);
+    }
 
     return res.json({ cart: user.cartdata });
   } catch (err) {
@@ -87,7 +96,7 @@ router.patch('/', async (req, res) => {
 
     let cart = user.cartdata || []
 
-    const idx = cart.findIndex(item => item.productId === productId)
+  const idx = cart.findIndex(item => String(item.productId) === String(productId))
     if (idx >= 0) {
       if (Number(quantity) <= 0) {
         cart.splice(idx, 1) // remove item
@@ -120,7 +129,7 @@ router.delete('/:productId', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' })
 
     let cart = user.cartdata || []
-    cart = cart.filter(item => item.productId !== productId)
+  cart = cart.filter(item => String(item.productId) !== String(productId))
 
     user.cartdata = cart
     await user.save()

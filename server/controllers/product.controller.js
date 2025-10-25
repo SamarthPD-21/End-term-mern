@@ -3,10 +3,17 @@ import User from "../models/user.model.js";
 
 export const listProducts = async (req, res) => {
   try {
-    const { category } = req.query;
+    const { category, launchingSoon } = req.query;
     const filter = {};
     if (category) filter.category = category;
-    const products = await Product.find(filter).sort({ createdAt: -1 }).lean();
+    // support a launchingSoon query flag to return scheduled products only
+    const wantLaunching = launchingSoon === '1' || launchingSoon === 'true' || launchingSoon === 'yes';
+    if (wantLaunching) {
+      // products not yet launched
+      filter.launched = false;
+    }
+    const sortBy = wantLaunching ? { launchAt: 1 } : { createdAt: -1 };
+    const products = await Product.find(filter).sort(sortBy).lean();
     // enrich with avgRating and reviewCount for list views
     const enriched = products.map((p) => {
       const comments = p.comments || [];

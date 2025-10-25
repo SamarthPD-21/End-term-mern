@@ -5,6 +5,7 @@ import { RootState } from "@/redux/store";
 import { updateEmail, updateName } from "@/redux/userSlice";
 import { useState } from "react";
 import { updateUserProfile } from "@/lib/User";
+import { notify } from '@/lib/toast'
 
 export default function SettingsPage() {
   const user = useSelector((state: RootState) => state.user);
@@ -23,9 +24,11 @@ export default function SettingsPage() {
     updateUserProfile(name, email)
       .then((data) => {
         console.log("Profile updated successfully:", data);
+        notify.success('Profile updated');
       })
       .catch((error) => {
         console.error("Error updating profile:", error);
+        notify.error('Failed to update profile');
       });
   };
 

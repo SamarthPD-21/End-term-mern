@@ -8,6 +8,8 @@ import { RootState } from '@/redux/store'
 import { getCurrentUser } from '@/lib/User'
 import { setUser, updateCartQuantity, removeFromCart, addToCart } from '@/redux/userSlice'
 import { toast as rtToast } from 'react-toastify'
+import { notify } from '@/lib/toast'
+import { REMOVE_ANIM_MS, UNDO_WINDOW_MS, SLIDE_IN_MS, TOAST_DELAY_MS } from '@/lib/cartTiming'
 
 // --- Type Definitions ---
 interface CartItemMeta {
@@ -49,12 +51,10 @@ export default function CartPage() {
       }
     } catch (e) {
       console.error(e)
+      notify.error('Failed to refresh session')
     }
   }
-  // Animation / timing constants (ms)
-  const REMOVE_ANIM_MS = 180 // how long before the row is removed from the DOM after starting animation
-  const UNDO_WINDOW_MS = 2000 // how long the user has to undo the remove
-  const SLIDE_IN_MS = 280
+  // Animation / timing constants (ms) are imported from lib/cartTiming
 
   // pendingRemovals is already declared below; we use helper functions to manipulate it
 
@@ -66,6 +66,7 @@ export default function CartPage() {
     const entry = pendingRemovals.current[pid]
     if (!entry) return undefined
     if (entry.finalizeTimer) clearTimeout(entry.finalizeTimer)
+    if (entry.localRemovalTimer) clearTimeout(entry.localRemovalTimer)
     delete pendingRemovals.current[pid]
     return entry.item
   }
@@ -84,28 +85,11 @@ export default function CartPage() {
     return id as number
   }
 
-  // Remove item: animate out, optimistic remove, schedule finalize; undo restores
+  // Remove item: show undo toast, then slide out after a short delay; schedule server finalize after undo window
   function removeItem(pid: string) {
     // find the item immediately so we can show toast right away
     const removed = cartItems.find((c) => (c.productId || c.id) === pid)
     if (!removed) return
-
-    // mark row as removing (plays slide-out animation)
-    setRemovingRows((s) => ({ ...s, [pid]: true }))
-
-    // schedule server finalize after undo window (start timer immediately)
-    const finalizeTimer = setTimeout(async () => {
-      try {
-        const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
-        await fetch(`${API}/api/cart/${pid}`, { method: 'DELETE', credentials: 'include' })
-      } catch (err) {
-        console.error(err)
-      } finally {
-        refreshUser()
-      }
-    }, UNDO_WINDOW_MS)
-
-    addPendingRemoval(pid, removed, finalizeTimer)
 
     // show undo toast immediately with the removed product info
     showUndoToast(pid, removed, () => {
@@ -134,8 +118,25 @@ export default function CartPage() {
       refreshUser()
     })
 
-    // actually remove from local UI state after a short delay so the slide-out animation can play
-    setTimeout(() => {
+    // schedule server finalize after undo window (start timer immediately)
+    const finalizeTimer = setTimeout(async () => {
+      try {
+        const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+        await fetch(`${API}/api/cart/${pid}`, { method: 'DELETE', credentials: 'include' })
+      } catch (err) {
+        console.error(err)
+        notify.error('Failed to remove item on server')
+      } finally {
+        refreshUser()
+      }
+    }, UNDO_WINDOW_MS)
+
+    // start slide-out animation after a brief toast-visible delay (from lib/cartTiming), then remove the row after animation
+    window.setTimeout(() => {
+      setRemovingRows((s) => ({ ...s, [pid]: true }))
+    }, TOAST_DELAY_MS)
+
+    const localRemovalTimer = window.setTimeout(() => {
       dispatch(removeFromCart(pid))
       setLocalQuantities((s) => {
         const next = { ...s }
@@ -149,7 +150,11 @@ export default function CartPage() {
         delete copy[pid]
         return copy
       })
-    }, REMOVE_ANIM_MS)
+  }, TOAST_DELAY_MS + REMOVE_ANIM_MS)
+
+    addPendingRemoval(pid, removed, finalizeTimer)
+    // attach the local removal timer so undo can cancel it
+    pendingRemovals.current[pid].localRemovalTimer = localRemovalTimer as unknown as ReturnType<typeof setTimeout>
   }
 
   // Normalize cart items
@@ -203,8 +208,9 @@ export default function CartPage() {
           if (typeof p.productId !== 'undefined') map[String(p.productId)] = Number(p.quantity || 0)
         })
         if (mounted) setAvailableMap(map)
-      } catch (e) {
+        } catch (e) {
         console.error('loadStocks error', e)
+        notify.error('Could not load stock information')
       }
     }
     loadStocks()
@@ -218,8 +224,8 @@ export default function CartPage() {
   const [bumped, setBumped] = useState<Record<string, boolean>>({})
   // last change direction per item: 1 => increment, -1 => decrement
   const [lastDelta, setLastDelta] = useState<Record<string, number>>({})
-  // pending removals waiting for undo (pid -> { item, finalizeTimer })
-  const pendingRemovals = useRef<Record<string, { item: CartItemMeta; finalizeTimer: ReturnType<typeof setTimeout> | null }>>({})
+  // pending removals waiting for undo (pid -> { item, finalizeTimer, localRemovalTimer })
+  const pendingRemovals = useRef<Record<string, { item: CartItemMeta; finalizeTimer: ReturnType<typeof setTimeout> | null; localRemovalTimer?: ReturnType<typeof setTimeout> | null }>>({})
   // rows currently animating out
   const [removingRows, setRemovingRows] = useState<Record<string, boolean>>({})
     // rows that were just restored (slide-in animation)
@@ -251,7 +257,7 @@ export default function CartPage() {
     // debounce server patch to coalesce rapid clicks
     if (timers.current[pid]) window.clearTimeout(timers.current[pid]!)
     timers.current[pid] = window.setTimeout(async () => {
-      try {
+        try {
         const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
         const res = await fetch(`${API}/api/cart`, {
           method: 'PATCH',
@@ -263,6 +269,7 @@ export default function CartPage() {
         await refreshUser()
       } catch (e) {
         console.error(e)
+        notify.error('Failed to update quantity')
       }
     }, 220)
   }
@@ -416,7 +423,7 @@ export default function CartPage() {
                 Total updated to ₹{totalPrice.toFixed(2)}
               </div>
               <button
-                onClick={() => alert('Temporary checkout clicked!')}
+                onClick={() => rtToast.info('Temporary checkout clicked!')}
                 className="mt-4 md:mt-0 px-6 py-3 rounded-xl font-bold bg-[#368581] text-[#FAF9F6] transition-transform hover:scale-105 duration-300"
               >
                 Checkout

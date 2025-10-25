@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { postProductComment } from "@/lib/Product";
 import axios from "axios";
 import { getCurrentUser } from "@/lib/User";
+import { notify } from '@/lib/toast';
+import { confirmWithToast } from '@/lib/confirm';
 
 interface Comment {
   _id?: string;
@@ -42,6 +44,7 @@ export default function ProductComments({ productId }: { productId: string }) {
       setTotal(t || 0);
     } catch (err) {
       console.error(err);
+      notify.error('Failed to load comments');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -59,7 +62,10 @@ export default function ProductComments({ productId }: { productId: string }) {
   }, [productId]);
 
   const submit = async () => {
-    if (!user) return alert("Please sign in to comment");
+    if (!user) {
+      notify.info('Please sign in to comment')
+      return
+    }
     setSubmitting(true);
     try {
       const res = await postProductComment(productId, { rating, text });
@@ -69,7 +75,7 @@ export default function ProductComments({ productId }: { productId: string }) {
       setRating(5);
     } catch (err) {
       console.error("post comment error:", err);
-      alert("Failed to post comment");
+      notify.error("Failed to post comment");
     } finally {
       setSubmitting(false);
     }
@@ -94,20 +100,22 @@ export default function ProductComments({ productId }: { productId: string }) {
       setComments((s) => s.map((it) => (it._id === c._id ? { ...it, text: updated.text, rating: updated.rating, isEditing: false } : it)));
     } catch (err) {
       console.error('edit comment error', err);
-      alert('Failed to edit comment');
+      notify.error('Failed to edit comment');
     }
   };
 
   const remove = async (c: Comment) => {
-    if (!confirm('Delete this review?')) return;
+    const ok = await confirmWithToast('Delete this review?', { confirmText: 'Delete', cancelText: 'Cancel' })
+    if (!ok) return
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
       await axios.delete(`${API_URL}api/products/${productId}/comments/${c._id}`, { withCredentials: true });
       setComments((s) => s.filter((it) => it._id !== c._id));
       setTotal((t) => Math.max(0, t - 1));
+      notify.success('Comment deleted');
     } catch (err) {
       console.error('delete comment error', err);
-      alert('Failed to delete comment');
+      notify.error('Failed to delete comment');
     }
   };
 
