@@ -90,7 +90,9 @@ export default function ProductComments({ productId }: { productId: string }) {
               next[String(c._id || '')] = true;
             }
           });
-        } catch (e) {}
+        } catch {
+          // ignore
+        }
         return next;
       });
     }, 20);
@@ -264,7 +266,7 @@ export default function ProductComments({ productId }: { productId: string }) {
                           <button onClick={() => remove(c)} className="px-3 py-1 bg-red-100 rounded">Delete</button>
                         </>
                       )}
-                      {user && (user as any).isAdmin && (
+                      {user?.isAdmin && (
                         <>
                           {/* Admins can delete any comment */}
                           <button onClick={() => remove(c)} className="px-3 py-1 bg-red-100 rounded">Delete</button>
@@ -277,7 +279,7 @@ export default function ProductComments({ productId }: { productId: string }) {
                       )}
                     </div>
 
-                    {user && (user as any).isAdmin && replyOpen[cid] && (
+                    {user?.isAdmin && replyOpen[cid] && (
                       <div className="mt-3">
                         <textarea value={replyDrafts[cid] ?? (c.reply?.text ?? '')} onChange={(e) => setReplyDrafts((s) => ({ ...s, [cid]: e.target.value }))} className="w-full p-2 border rounded mb-2" placeholder="Write a reply to this comment" />
                         <div className="flex gap-2">

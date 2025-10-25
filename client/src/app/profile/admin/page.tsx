@@ -107,12 +107,12 @@ export default function AdminPanel() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     load();
     loadUsers();
     loadAudits(1);
-    // intentionally run only once on mount; loadAudits is stable within this module
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // intentionally run only once on mount; loadAudits is stable within this module
   }, []);
 
   
@@ -158,9 +158,10 @@ export default function AdminPanel() {
   const [confirmInputValue, setConfirmInputValue] = useState<string>('');
   const [panelView, setPanelView] = useState<'home' | 'admin' | 'products' | 'orders' | 'restock'>('home');
   // When opening orders view, fetch orders
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (panelView === 'orders') loadOrders(1, ordersQuery);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [panelView]);
 
   // When opening restock view, ensure products are loaded
@@ -177,7 +178,7 @@ export default function AdminPanel() {
         }
       })();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [panelView]);
 
   const toggleUpdating = (id: string, v: boolean) => setUpdatingProducts((s) => ({ ...s, [id]: v }));
