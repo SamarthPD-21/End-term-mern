@@ -5,7 +5,7 @@ import { useState, useEffect, Fragment, useRef } from "react";
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { fetchProducts, updateProduct as apiUpdateProduct, deleteProduct as apiDeleteProduct, createProduct as apiCreateProduct } from "@/lib/Product";
+import { fetchProducts, updateProduct as apiUpdateProduct, deleteProduct as apiDeleteProduct, createProduct as apiCreateProduct, adjustProduct as apiAdjustProduct } from "@/lib/Product";
 import Spinner from '@/components/Spinner';
 import CategorySelect from '@/components/CategorySelect';
 import { toast as rtToast } from 'react-toastify';
@@ -190,10 +190,11 @@ export default function AdminPanel() {
       toggleUpdating(id, true);
       // optimistic UI
       setProducts((list) => list.map((x) => (x._id === id ? { ...x, quantity: target } : x)));
-      await apiUpdateProduct(id, { quantity: target });
+      // use atomic adjust endpoint for +/- operations to avoid races
+      await apiAdjustProduct(id, delta);
       rtToast.success('Inventory updated');
     } catch (err) {
-      console.error('update qty failed', err);
+      console.error('adjust qty failed', err);
       // revert optimistic change
       setProducts((list) => list.map((x) => (x._id === id ? { ...x, quantity: current } : x)));
       rtToast.error('Failed to update inventory');
@@ -205,10 +206,16 @@ export default function AdminPanel() {
   const setAbsoluteQuantity = async (p: any, qty: number) => {
     const id = p._id;
     const q = Math.max(0, Math.floor(Number(qty || 0)));
+    const current = Number(p.quantity || 0);
+    const delta = q - current;
     try {
       toggleUpdating(id, true);
+      // optimistic set
       setProducts((list) => list.map((x) => (x._id === id ? { ...x, quantity: q } : x)));
-      await apiUpdateProduct(id, { quantity: q });
+      // use atomic adjust to move by delta (works for increases and decreases)
+      if (delta !== 0) {
+        await apiAdjustProduct(id, delta);
+      }
       rtToast.success('Inventory set');
     } catch (err) {
       console.error('set qty failed', err);

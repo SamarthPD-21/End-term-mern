@@ -1,5 +1,5 @@
 import express from "express";
-import { listProducts, getProductById, updateProduct, deleteProduct, getProductsBatch, listProductComments, addProductComment, editProductComment, deleteProductComment } from "../controllers/product.controller.js";
+import { listProducts, getProductById, updateProduct, deleteProduct, getProductsBatch, listProductComments, addProductComment, editProductComment, deleteProductComment, adjustProductQuantity, addProductCommentReply } from "../controllers/product.controller.js";
 import isAuth from "../middleware/auth.middleware.js";
 import isAdmin from "../middleware/admin.middleware.js";
 import upload from "../middleware/multer.js";
@@ -18,6 +18,8 @@ router.post('/:id/comments', isAuth, addProductComment);
 // edit/delete a specific comment (owner or admin)
 router.put('/:id/comments/:commentId', isAuth, editProductComment);
 router.delete('/:id/comments/:commentId', isAuth, deleteProductComment);
+// admin reply to a comment
+router.post('/:id/comments/:commentId/reply', isAuth, isAdmin, addProductCommentReply);
 
 // batch: POST /api/products/batch { ids: [...] }
 router.post('/batch', getProductsBatch);
@@ -25,5 +27,8 @@ router.post('/batch', getProductsBatch);
 // admin-only: update and delete
 router.put("/:id", isAuth, isAdmin, upload.single("image"), updateProduct);
 router.delete("/:id", isAuth, isAdmin, deleteProduct);
+
+// atomic adjust (admin-only): { delta: number }
+router.post('/:id/adjust', isAuth, isAdmin, adjustProductQuantity);
 
 export default router;

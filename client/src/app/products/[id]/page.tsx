@@ -84,6 +84,17 @@ export default function ProductPage(props: unknown) {
     if (!product) return;
     setAdding(true);
     try {
+      // enforce per-order client-side cap of 5 and stock availability
+      if (qty > 5) {
+        notify.error('You can order a maximum of 5 units per product');
+        setAdding(false);
+        return;
+      }
+      if (qty > stock) {
+        notify.error('Not enough stock available');
+        setAdding(false);
+        return;
+      }
       await axios.post(`${API_URL}api/cart`, { productId: product._id || product.id, name: product.name, price: product.price, image: product.image || '/images/placeholder.png', quantity: qty }, { withCredentials: true });
       // refresh user
       const me = await getCurrentUser();
@@ -188,10 +199,12 @@ export default function ProductPage(props: unknown) {
               <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">-</button>
               <input value={qty} onChange={(e) => setQty(() => {
                 const v = Math.max(1, Number(e.target.value) || 1);
-                return Math.min(v, Math.max(1, stock));
+                // cap to available stock and per-order cap of 5
+                return Math.min(v, Math.max(1, stock), 5);
               })} className="w-16 text-center p-2 border rounded" />
-              <button onClick={() => setQty((q) => Math.min(Math.max(1, stock), q + 1))} disabled={qty >= Math.max(1, stock)} className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50">+</button>
+              <button onClick={() => setQty((q) => Math.min(Math.max(1, Math.min(stock, 5)), q + 1))} disabled={qty >= Math.min(Math.max(1, stock), 5)} className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50">+</button>
             </div>
+            <div className="text-sm text-gray-500">Stock: {stock} • Max/order: 5</div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -212,7 +225,7 @@ export default function ProductPage(props: unknown) {
               </button>
             ) : (
               <>
-                <button onClick={addToCart} disabled={adding || qty > stock} className={`px-6 py-3 rounded-2xl text-lg font-bold shadow-lg transform transition-all ${justAdded ? 'bg-emerald-500 scale-105' : 'bg-[#368581]'}`} style={{ color: '#FAF9F6' }}>
+                <button onClick={addToCart} disabled={adding || qty > stock || qty > 5} className={`px-6 py-3 rounded-2xl text-lg font-bold shadow-lg transform transition-all ${justAdded ? 'bg-emerald-500 scale-105' : 'bg-[#368581]'}`} style={{ color: '#FAF9F6' }}>
                   {adding ? 'Adding...' : (justAdded ? 'Added ✓' : 'Add to Cart')}
                 </button>
                 <button onClick={wishlist} className="px-6 py-3 rounded-2xl border font-bold">Wishlist</button>

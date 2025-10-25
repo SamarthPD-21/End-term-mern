@@ -162,6 +162,39 @@ export const deleteProductComment = async (req, res) => {
   }
 };
 
+// POST /api/products/:id/comments/:commentId/reply - admin reply to a comment
+export const addProductCommentReply = async (req, res) => {
+  try {
+    const { id, commentId } = req.params;
+    const { text } = req.body || {};
+
+    if (!req.user || !req.user.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+
+    const p = await Product.findById(id);
+    if (!p) return res.status(404).json({ error: 'Not found' });
+
+    const comment = p.comments.id(commentId);
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+
+    // attach or overwrite reply subdocument
+    comment.reply = comment.reply || {};
+    comment.reply.adminId = req.userId || (req.user && (req.user.id || req.user._id));
+    comment.reply.adminName = req.user?.name || req.user?.userName || req.user?.email || 'Admin';
+  // include admin profile image when available for client display
+  comment.reply.adminImage = req.user?.profileImage || null;
+    comment.reply.text = String(text || '');
+    comment.reply.createdAt = new Date();
+
+    await p.save();
+
+    const out = (comment && typeof comment.toObject === 'function') ? comment.toObject() : JSON.parse(JSON.stringify(comment));
+    return res.status(200).json({ comment: out, reply: out.reply });
+  } catch (err) {
+    console.error('addProductCommentReply error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
 export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -216,6 +249,32 @@ export const deleteProduct = async (req, res) => {
   } catch (err) {
     console.error("deleteProduct error:", err);
     return res.status(500).json({ error: "Server error" });
+  }
+};
+
+// POST /api/products/:id/adjust - atomically adjust product.quantity by delta (admin only)
+export const adjustProductQuantity = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { delta } = req.body || {};
+    const n = Number(delta);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n === 0) return res.status(400).json({ error: 'delta (non-zero integer) required' });
+
+    // If decreasing stock, ensure there is enough quantity to subtract
+    if (n < 0) {
+      const needed = Math.abs(n);
+      const p = await Product.findOneAndUpdate({ _id: id, quantity: { $gte: needed } }, { $inc: { quantity: n } }, { new: true });
+      if (!p) return res.status(400).json({ error: 'Insufficient stock or product not found' });
+      return res.status(200).json({ product: p });
+    }
+
+    // increasing stock - safe
+    const p = await Product.findByIdAndUpdate(id, { $inc: { quantity: n } }, { new: true });
+    if (!p) return res.status(404).json({ error: 'Not found' });
+    return res.status(200).json({ product: p });
+  } catch (err) {
+    console.error('adjustProductQuantity error:', err);
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 

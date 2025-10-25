@@ -107,7 +107,20 @@ const userSlice = createSlice({
   if ('email' in incomingObj) next.email = typeof incomingObj['email'] === 'string' ? incomingObj['email'] as string : null;
   if ('isAdmin' in incomingObj) next.isAdmin = typeof incomingObj['isAdmin'] === 'boolean' ? incomingObj['isAdmin'] as boolean : null;
   if ('profileImage' in incomingObj) next.profileImage = typeof incomingObj['profileImage'] === 'string' ? incomingObj['profileImage'] as string : null;
-  if ('cartdata' in incomingObj) next.cartdata = Array.isArray(incomingObj['cartdata']) ? (incomingObj['cartdata'] as unknown as CartItem[]) : [];
+  if ('cartdata' in incomingObj) {
+    const raw = Array.isArray(incomingObj['cartdata']) ? (incomingObj['cartdata'] as unknown as Array<Record<string, unknown>>) : [];
+    // Normalize cart items so reducers can rely on `id` field consistently.
+    next.cartdata = raw.map((it) => {
+      const id = (it.id as string) || (it.productId as string) || (it._id as string) || '';
+      return {
+        id: String(id),
+        name: typeof it.name === 'string' ? it.name : (typeof it.title === 'string' ? it.title : ''),
+        price: Number(it.price || 0),
+        quantity: Number(it.quantity ?? it.qty ?? 1),
+        image: typeof it.image === 'string' ? it.image : undefined,
+      } as CartItem;
+    });
+  }
   if ('wishlistdata' in incomingObj) next.wishlistdata = Array.isArray(incomingObj['wishlistdata']) ? incomingObj['wishlistdata'] as unknown as Array<{ id: string; name: string; price: number }> : null;
   if ('orderdata' in incomingObj) next.orderdata = Array.isArray(incomingObj['orderdata']) ? incomingObj['orderdata'] as unknown as Array<{ id: string; name: string; price: number }> : null;
   if ('addressdata' in incomingObj) next.addressdata = Array.isArray(incomingObj['addressdata']) ? incomingObj['addressdata'] as unknown as Array<AddressData> : null;

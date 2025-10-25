@@ -22,6 +22,9 @@ export interface Product {
   reviewCount?: number;
   _id?: string;
   launchAt?: string | null;
+  quantity?: number;
+  countInStock?: number;
+  stock?: number;
 }
 
 export default function ProductCard({
@@ -46,6 +49,17 @@ export default function ProductCard({
   const addToCart = async (p: Product) => {
   setLoadingAdd(true);
     try {
+  const stock = Number(p.quantity ?? p.countInStock ?? p.stock ?? 0);
+      if (cartQty >= 5) {
+        notify.error('You can order a maximum of 5 units per product');
+        setLoadingAdd(false);
+        return;
+      }
+      if (cartQty + 1 > stock) {
+        notify.error('Not enough stock available');
+        setLoadingAdd(false);
+        return;
+      }
       // add/update product in cart
       await axios.post(
         `${API_URL}api/cart`,
@@ -234,6 +248,7 @@ export default function ProductCard({
 
         <div className="mb-6">
           <span className="text-2xl font-bold">₹{product.price.toFixed(2)}</span>
+          <div className="text-xs text-gray-500 mt-1">Stock: {Number(product.quantity ?? product.countInStock ?? product.stock ?? 0)}</div>
           {cartQty > 0 && (
             <div className="mt-2">
               <Link href="/cart" className="inline-block text-sm bg-green-50 text-green-800 px-2 py-1 rounded-full border border-green-100">

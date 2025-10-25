@@ -38,3 +38,8 @@ export const deleteProduct = async (id: string) => {
   const resp = await api.delete(`/api/products/${id}`);
   return resp.data;
 };
+
+export const adjustProduct = async (id: string, delta: number) => {
+  const resp = await api.post(`/api/products/${id}/adjust`, { delta });
+  return resp.data;
+};
