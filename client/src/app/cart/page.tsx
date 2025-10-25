@@ -232,6 +232,10 @@ export default function CartPage() {
     const [restoringRows, setRestoringRows] = useState<Record<string, boolean>>({})
   // restoringTimers was unused; removed to silence lint warnings
 
+  // Thanks popup visibility
+  const [thanksVisible, setThanksVisible] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+
   const updateQuantity = (pid: string, change: number) => {
     const currentQty = localQuantities[pid] || 1
     const desired = Math.max(currentQty + change, 1)
@@ -423,15 +427,61 @@ export default function CartPage() {
                 Total updated to ₹{totalPrice.toFixed(2)}
               </div>
               <button
-                onClick={() => rtToast.info('Temporary checkout clicked!')}
-                className="mt-4 md:mt-0 px-6 py-3 rounded-xl font-bold bg-[#368581] text-[#FAF9F6] transition-transform hover:scale-105 duration-300"
+                onClick={async () => {
+                  if (checkoutLoading) return
+                  setCheckoutLoading(true)
+                  try {
+                    const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+                    const res = await fetch(`${API}/api/user/order/create`, {
+                      method: 'POST',
+                      credentials: 'include',
+                      headers: { 'Content-Type': 'application/json' },
+                      // no body required: server will use user's cart if omitted
+                    })
+                    const json = await res.json().catch(() => ({}))
+                    if (!res.ok) {
+                      const msg = (json && (json.error || json.message)) || 'Checkout failed'
+                      notify.error(String(msg))
+                      return
+                    }
+
+                    // refresh user from server to update cart/orderdata in Redux
+                    await refreshUser()
+
+                    // show success popup
+                    setThanksVisible(true)
+                    window.setTimeout(() => setThanksVisible(false), 2400)
+                    // optionally navigate to orders page in profile: left to developer
+                  } catch (err) {
+                    console.error('checkout failed', err)
+                    notify.error('Checkout failed')
+                  } finally {
+                    setCheckoutLoading(false)
+                  }
+                }}
+                disabled={checkoutLoading}
+                className={`mt-4 md:mt-0 px-6 py-3 rounded-xl font-bold bg-[#368581] text-[#FAF9F6] transition-transform hover:scale-105 duration-300 ${checkoutLoading ? 'opacity-70 pointer-events-none' : ''}`}
               >
-                Checkout
+                {checkoutLoading ? 'Processing...' : 'Checkout'}
               </button>
             </div>
           </>
         )}
       </section>
+
+      {/* Thanks popup (client-side only) */}
+      {typeof window !== 'undefined' && (
+        <div aria-hidden={!thanksVisible}>
+          <div className={`${thanksVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'} fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-300`}> 
+            <div onClick={() => setThanksVisible(false)} className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+            <div className={`relative bg-white rounded-2xl p-6 max-w-sm w-[90%] text-center transform transition-all duration-300 ${thanksVisible ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'}`}>
+              <h3 className="text-2xl font-semibold text-emerald-700 mb-2">Thanks for purchasing</h3>
+              <p className="text-sm text-gray-600 mb-4">Your order has been placed. We appreciate your purchase!</p>
+              <button onClick={() => setThanksVisible(false)} className="px-4 py-2 rounded bg-emerald-600 text-white">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
       <style jsx>{`
         @keyframes slideIn {
           from { opacity: 0; transform: translateX(12px); }

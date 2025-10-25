@@ -21,6 +21,12 @@ const orderDataSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   orderDate: { type: Date, default: Date.now },
   status: { type: String, default: "Pending" },
+  // whether product quantities from this order were returned to stock (e.g. when order was cancelled)
+  restocked: { type: Boolean, default: false },
+  // timestamp when restock occurred (if any)
+  restockedAt: { type: Date },
+  // optional note with details if some items couldn't be restocked (e.g., deleted products)
+  restockNote: { type: String },
 });
 
 const addressSchema = new mongoose.Schema({

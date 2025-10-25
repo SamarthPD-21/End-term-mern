@@ -29,18 +29,19 @@ const Navbar = () => {
       {/* Outer Rounded Container */}
       <div className="bg-[#4c8380] rounded-xl shadow-md flex items-center justify-between px-5 py-2">
         {/* Logo */}
-        <div className="flex items-center space-x-3 animate-float">
+        {/* Use group so child elements can animate on hover; remove 'animate-float' */}
+        <div className="flex items-center space-x-3 group">
           <Image
             src="/images/logo.png"
             alt="SPD Global Logo"
-            className="rounded-full"
+            className="rounded-full transition-transform duration-300 ease-out transform group-hover:scale-110 group-hover:-rotate-3"
             width={44}
             height={44}
             priority={true}
           />
           <div className="leading-tight text-white">
-            <h1 className="text-lg font-bold tracking-wide">Spd Global</h1>
-            <p className="text-xs font-light italic">
+            <h1 className="text-lg font-bold tracking-wide transition-transform duration-300 group-hover:translate-x-1">Spd Global</h1>
+            <p className="text-xs font-light italic transition-transform duration-300 group-hover:translate-x-1">
               Lifestyle. Fashion. Home & Beyond
             </p>
           </div>

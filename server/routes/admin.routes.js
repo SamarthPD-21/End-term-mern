@@ -30,5 +30,7 @@ router.post("/remove-admin", isAuth, isAdmin, express.json(), demoteAdmin);
 // list users for admin panel
 router.get("/users", isAuth, isAdmin, listUsers);
 router.get("/audits", isAuth, isAdmin, listAudits);
+router.get("/orders", isAuth, isAdmin, (req, res, next) => import('../controllers/admin.controller.js').then(m => m.listOrders(req, res, next)).catch(next));
+router.patch('/orders/:orderId/status', isAuth, isAdmin, express.json(), (req, res, next) => import('../controllers/admin.controller.js').then(m => m.updateOrderStatus(req, res, next)).catch(next));
 
 export default router;

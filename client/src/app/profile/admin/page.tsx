@@ -74,6 +74,39 @@ export default function AdminPanel() {
     }
   };
 
+  // Aggregate orders from users for admin Orders Management
+  // Orders management state (fetched from admin endpoint)
+  const [orders, setOrders] = useState<Array<any>>([]);
+  const [ordersTotal, setOrdersTotal] = useState<number>(0);
+  const [ordersPage, setOrdersPage] = useState<number>(1);
+  const [ordersPageSize, setOrdersPageSize] = useState<number>(20);
+  const [ordersSort, setOrdersSort] = useState<string>('date_desc');
+  const [ordersQuery, setOrdersQuery] = useState<string>('');
+  const [ordersLoading, setOrdersLoading] = useState<boolean>(false);
+
+  const loadOrders = async (page = 1, q?: string) => {
+    try {
+      setOrdersLoading(true);
+      const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('pageSize', String(ordersPageSize));
+      if (ordersSort) params.set('sort', ordersSort);
+      if (q) params.set('q', q);
+      const res = await fetch(`${API}/api/admin/orders?${params.toString()}`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load orders');
+      const json = await res.json();
+      setOrders(json.items || []);
+      setOrdersTotal(json.total || 0);
+      setOrdersPage(json.page || page);
+    } catch (err) {
+      console.error('loadOrders error', err);
+      rtToast.error('Failed to load orders');
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
   useEffect(() => {
     load();
     loadUsers();
@@ -82,12 +115,31 @@ export default function AdminPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  
+
   // audits
   const [audits, setAudits] = useState<Array<any>>([]);
   const [auditsTotal, setAuditsTotal] = useState<number>(0);
   const [auditPage, setAuditPage] = useState<number>(1);
   const [auditPageSize] = useState<number>(20);
   const [auditQuery, setAuditQuery] = useState<string>('');
+  // Restock UI state
+  const [restockLoading, setRestockLoading] = useState<boolean>(false);
+  const [updatingProducts, setUpdatingProducts] = useState<Record<string, boolean>>({});
+  const [restockQuery, setRestockQuery] = useState<string>('');
+  const [restockCompact, setRestockCompact] = useState<boolean>(false);
+
+  // Inline Heroicons (outline) for plus/minus to avoid adding deps
+  const PlusIcon = ({ className = '' }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+    </svg>
+  );
+  const MinusIcon = ({ className = '' }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+    </svg>
+  );
 
   const loadAudits = async (page = 1, q?: string) => {
     try {
@@ -104,7 +156,75 @@ export default function AdminPanel() {
 
   // Promise-based modal helper: opens confirm/input modal and resolves with user response
   const [confirmInputValue, setConfirmInputValue] = useState<string>('');
-  const [panelView, setPanelView] = useState<'home' | 'admin' | 'products'>('home');
+  const [panelView, setPanelView] = useState<'home' | 'admin' | 'products' | 'orders' | 'restock'>('home');
+  // When opening orders view, fetch orders
+  useEffect(() => {
+    if (panelView === 'orders') loadOrders(1, ordersQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panelView]);
+
+  // When opening restock view, ensure products are loaded
+  useEffect(() => {
+    if (panelView === 'restock') {
+      (async () => {
+        try {
+          setRestockLoading(true);
+          await load(); // load products
+        } catch (e) {
+          console.error('failed to load products for restock', e);
+        } finally {
+          setRestockLoading(false);
+        }
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panelView]);
+
+  const toggleUpdating = (id: string, v: boolean) => setUpdatingProducts((s) => ({ ...s, [id]: v }));
+
+  const adjustQuantity = async (p: any, delta: number) => {
+    const id = p._id;
+    const current = Number(p.quantity || 0);
+    const target = Math.max(0, current + delta);
+    try {
+      toggleUpdating(id, true);
+      // optimistic UI
+      setProducts((list) => list.map((x) => (x._id === id ? { ...x, quantity: target } : x)));
+      await apiUpdateProduct(id, { quantity: target });
+      rtToast.success('Inventory updated');
+    } catch (err) {
+      console.error('update qty failed', err);
+      // revert optimistic change
+      setProducts((list) => list.map((x) => (x._id === id ? { ...x, quantity: current } : x)));
+      rtToast.error('Failed to update inventory');
+    } finally {
+      toggleUpdating(id, false);
+    }
+  };
+
+  const setAbsoluteQuantity = async (p: any, qty: number) => {
+    const id = p._id;
+    const q = Math.max(0, Math.floor(Number(qty || 0)));
+    try {
+      toggleUpdating(id, true);
+      setProducts((list) => list.map((x) => (x._id === id ? { ...x, quantity: q } : x)));
+      await apiUpdateProduct(id, { quantity: q });
+      rtToast.success('Inventory set');
+    } catch (err) {
+      console.error('set qty failed', err);
+      // revert by reloading product from server
+      await load();
+      rtToast.error('Failed to set inventory');
+    } finally {
+      toggleUpdating(id, false);
+    }
+  };
+
+  // react to page size / sort changes
+  useEffect(() => {
+    if (panelView === 'orders') loadOrders(1, ordersQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ordersPageSize, ordersSort]);
   const openConfirmModal = (opts: { title?: string; message?: string; showInput?: boolean; defaultValue?: string; confirmLabel?: string; cancelLabel?: string }) => {
     return new Promise<any>((resolve) => {
       confirmResolveRef.current = resolve;
@@ -377,6 +497,14 @@ export default function AdminPanel() {
             <h3 className="text-lg font-semibold mb-2">Product Manager</h3>
             <p className="text-sm text-gray-500">Create, edit and delete products; manage product inventory and images.</p>
           </div>
+          <div onClick={() => setPanelView('orders')} role="button" className="p-6 cursor-pointer rounded-lg border hover:shadow-lg transition transform-gpu hover:-translate-y-1">
+            <h3 className="text-lg font-semibold mb-2">Orders Management</h3>
+            <p className="text-sm text-gray-500">View recent orders placed by users, inspect items and statuses.</p>
+          </div>
+          <div onClick={() => setPanelView('restock')} role="button" className="p-6 cursor-pointer rounded-lg border hover:shadow-lg transition transform-gpu hover:-translate-y-1">
+            <h3 className="text-lg font-semibold mb-2">Restock</h3>
+            <p className="text-sm text-gray-500">Quickly increase or decrease stock for products. Useful for inventory adjustments.</p>
+          </div>
         </div>
       )}
 
@@ -482,6 +610,268 @@ export default function AdminPanel() {
           </table>
         </div>
       </div>
+        </>
+      )}
+
+      {/* Orders Management view */}
+      {panelView === 'orders' && (
+        <>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPanelView('home')} className="px-3 py-1 rounded border">← Back</button>
+            <h2 className="text-lg font-medium">Orders Management</h2>
+          </div>
+
+          <div className="p-4 bg-white rounded-md border mt-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-3">
+              <div>
+                <h3 className="font-medium">All Orders</h3>
+                <p className="text-sm text-gray-500">Aggregated list of orders placed by users. Click a row to expand products.</p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <input value={ordersQuery} onChange={(e) => setOrdersQuery(e.target.value)} placeholder="Search by email, order id, or user..." className="px-3 py-2 border rounded" />
+                <button onClick={() => loadOrders(1, ordersQuery)} className="px-3 py-2 bg-gray-100 rounded">Search</button>
+                <select value={ordersPageSize} onChange={(e) => setOrdersPageSize(Number(e.target.value))} className="px-2 py-2 border rounded">
+                  <option value={10}>10 / page</option>
+                  <option value={20}>20 / page</option>
+                  <option value={50}>50 / page</option>
+                </select>
+                <select value={ordersSort} onChange={(e) => setOrdersSort(e.target.value)} className="px-2 py-2 border rounded">
+                  <option value="date_desc">Date (newest)</option>
+                  <option value="date_asc">Date (oldest)</option>
+                  <option value="total_desc">Total (high → low)</option>
+                  <option value="total_asc">Total (low → high)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="overflow-auto max-h-96">
+              {ordersLoading ? (
+                <div className="flex items-center justify-center p-8"><Spinner size={1.25} /> <span className="ml-3 text-sm text-gray-500">Loading orders…</span></div>
+              ) : orders.length === 0 ? (
+                <div className="p-6 text-center text-sm text-gray-500">No orders found</div>
+              ) : (
+                <div className="space-y-3">
+                  {orders.map((o, idx) => (
+                    <div key={`${o.userEmail}-${o.orderId}-${idx}`} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="font-medium">{o.userName || '-'}</div>
+                            <div className="text-xs text-gray-400">{o.userEmail}</div>
+                            <div className="ml-auto text-sm text-gray-600">{new Date(o.orderDate).toLocaleString()}</div>
+                          </div>
+                          <div className="mt-2 text-sm text-gray-700">Order <span className="font-mono text-xs">{o.orderId}</span></div>
+                        </div>
+                        <div className="text-right">
+                              <div className="text-lg font-semibold">₹{Number(o.totalAmount || 0).toFixed(2)}</div>
+                              <div className="mt-2">
+                                {/* status badge with subtle animation */}
+                                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2
+                                  ${o.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 animate-pulse' : ''}
+                                  ${o.status === 'packing' ? 'bg-indigo-100 text-indigo-800 animate-pulse' : ''}
+                                  ${o.status === 'shipping' ? 'bg-blue-100 text-blue-800 animate-pulse' : ''}
+                                  ${o.status === 'delivered' ? 'bg-green-100 text-green-800' : ''}
+                                  ${o.status === 'canceled' ? 'bg-red-100 text-red-800 animate-bounce' : ''}
+                                `}>{o.status}</div>
+
+                                <select
+                                  value={o.status}
+                                  onChange={async (e) => {
+                                    const newStatus = e.target.value;
+                                    try {
+                                      const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+                                      const res = await fetch(`${API}/api/admin/orders/${o.orderId}/status`, {
+                                        method: 'PATCH',
+                                        credentials: 'include',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ status: newStatus }),
+                                      });
+                                      if (!res.ok) {
+                                        const j = await res.json().catch(() => ({}));
+                                        rtToast.error(j?.error || 'Failed to update status');
+                                      } else {
+                                        rtToast.success('Order status updated');
+                                        // refresh orders
+                                        loadOrders(ordersPage, ordersQuery);
+                                        // also attempt to refresh users list to reflect user's orderdata if shown
+                                        loadUsers();
+                                      }
+                                    } catch (err) {
+                                      console.error('status update failed', err);
+                                      rtToast.error('Failed to update status');
+                                    }
+                                  }}
+                                  className="px-2 py-1 border rounded text-sm"
+                                >
+                                  <option value="Pending">Pending</option>
+                                  <option value="packing">packing</option>
+                                  <option value="shipping">shipping</option>
+                                  <option value="delivered">delivered</option>
+                                  <option value="canceled">canceled</option>
+                                </select>
+                              </div>
+                        </div>
+                      </div>
+
+                      <details className="mt-3">
+                        <summary className="cursor-pointer text-sm text-gray-600">{o.products.length} item(s) — view details</summary>
+                        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {o.products.map((p: any) => (
+                            <div key={p.productId || p.id} className="flex items-center gap-3 bg-gray-50 p-2 rounded">
+                              {p.image ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={p.image} alt={p.name} className="w-14 h-14 object-cover rounded" />
+                              ) : (
+                                <div className="w-14 h-14 bg-gray-200 rounded" />
+                              )}
+                              <div className="flex-1">
+                                <div className="text-sm font-medium">{p.name}</div>
+                                <div className="text-xs text-gray-500">Qty: {p.quantity} • ₹{Number(p.price || 0).toFixed(2)}</div>
+                              </div>
+                            </div>
+                          ))}
+                          {o.restockNote && (
+                            <div className="col-span-1 md:col-span-2 mt-2 text-xs text-red-600">Restock note: {o.restockNote}</div>
+                          )}
+                        </div>
+                      </details>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-2 flex items-center justify-between text-sm">
+              <div>{orders.length > 0 ? `Showing ${orders.length} of ${ordersTotal}` : 'No orders'}</div>
+              <div className="flex gap-2">
+                <button disabled={ordersPage <= 1} onClick={() => loadOrders(ordersPage - 1, ordersQuery)} className="px-2 py-1 border rounded">Prev</button>
+                <button disabled={(ordersPage * ordersPageSize) >= ordersTotal} onClick={() => loadOrders(ordersPage + 1, ordersQuery)} className="px-2 py-1 border rounded">Next</button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Restock Inventory view */}
+      {panelView === 'restock' && (
+        <>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPanelView('home')} className="px-3 py-1 rounded border">← Back</button>
+            <h2 className="text-lg font-medium">Restock Inventory</h2>
+          </div>
+
+          <div className="mt-4 bg-white p-4 rounded shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <input value={restockQuery} onChange={(e) => setRestockQuery(e.target.value)} placeholder="Search products by name or category..." className="flex-1 px-3 py-2 border rounded" />
+              <button onClick={() => { load(); }} className="px-3 py-2 rounded bg-gray-100">Refresh</button>
+            </div>
+
+            {restockLoading ? (
+              <div className="p-8 flex items-center justify-center"><Spinner /> <div className="ml-3 text-sm text-gray-600">Loading products…</div></div>
+            ) : (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-sm text-gray-600">View:</div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setRestockCompact(false)} className={`px-3 py-1 rounded ${!restockCompact ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`}>Card</button>
+                    <button onClick={() => setRestockCompact(true)} className={`px-3 py-1 rounded ${restockCompact ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`}>Table</button>
+                  </div>
+                </div>
+
+                {!restockCompact ? (
+                  <div className="space-y-3 max-h-[60vh] overflow-auto">
+                    {products
+                      .filter((p) => {
+                        if (!restockQuery) return true;
+                        const q = restockQuery.toLowerCase();
+                        return (p.name || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q);
+                      })
+                      .map((p: any) => (
+                        <div key={p._id} className="w-full bg-white border rounded-lg p-4 flex items-center justify-between gap-4 hover:shadow-lg transition-transform">
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-20 h-20 flex-shrink-0">
+                              <Image src={p.image || '/images/placeholder.png'} alt={p.name} width={80} height={80} className="w-20 h-20 object-cover rounded" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-medium truncate">{p.name}</div>
+                              <div className="text-xs text-gray-500 truncate">{p.category} • ₹{p.price}</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <button aria-label={`Decrease ${p.name}`} disabled={Boolean(updatingProducts[p._id])} onClick={() => adjustQuantity(p, -1)} className="w-10 h-10 rounded border flex items-center justify-center text-lg font-medium bg-white hover:bg-gray-50 transition-transform">
+                              <MinusIcon className="w-5 h-5 text-gray-700" />
+                            </button>
+                            <input
+                              aria-label={`Quantity for ${p.name}`}
+                              type="number"
+                              value={Number(p.quantity || 0)}
+                              onChange={(e) => setProducts((list) => list.map((x) => (x._id === p._id ? { ...x, quantity: Number(e.target.value) } : x)))}
+                              onBlur={(e) => setAbsoluteQuantity(p, Number(e.target.value))}
+                              className="w-20 text-center border px-2 py-1 rounded text-sm"
+                            />
+                            <button aria-label={`Increase ${p.name}`} disabled={Boolean(updatingProducts[p._id])} onClick={() => adjustQuantity(p, 1)} className="w-10 h-10 rounded border flex items-center justify-center text-lg font-medium bg-white hover:bg-gray-50 transition-transform">
+                              <PlusIcon className="w-5 h-5 text-gray-700" />
+                            </button>
+                            <div className="ml-4 w-28 text-right">
+                              {updatingProducts[p._id] ? <Spinner size={0.9} /> : <div className="text-sm font-medium">{p.quantity}</div>}
+                              <div className="text-xs text-gray-400 truncate">ID: {String(p.productId || p._id).slice(0,8)}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="overflow-auto max-h-[60vh] border rounded">
+                    <table className="w-full text-left table-auto">
+                      <thead className="bg-gray-50">
+                        <tr className="text-sm text-gray-600">
+                          <th className="p-2">Product</th>
+                          <th className="p-2">Category</th>
+                          <th className="p-2">Price</th>
+                          <th className="p-2">Quantity</th>
+                          <th className="p-2">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {products.filter((p) => {
+                          if (!restockQuery) return true;
+                          const q = restockQuery.toLowerCase();
+                          return (p.name || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q);
+                        }).map((p: any) => (
+                          <tr key={p._id} className="border-t hover:bg-gray-50 transition">
+                            <td className="p-2 flex items-center gap-3">
+                              <div className="w-12 h-12">
+                                <Image src={p.image || '/images/placeholder.png'} alt={p.name} width={48} height={48} className="w-12 h-12 object-cover rounded" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium truncate">{p.name}</div>
+                                <div className="text-xs text-gray-400 truncate">ID: {String(p.productId || p._id).slice(0,8)}</div>
+                              </div>
+                            </td>
+                            <td className="p-2 text-sm text-gray-600">{p.category}</td>
+                            <td className="p-2 text-sm">₹{p.price}</td>
+                            <td className="p-2 text-sm">{p.quantity}</td>
+                            <td className="p-2">
+                              <div className="flex items-center gap-2">
+                                <button aria-label={`Decrease ${p.name}`} disabled={Boolean(updatingProducts[p._id])} onClick={() => adjustQuantity(p, -1)} className="px-2 py-1 rounded border bg-white hover:bg-gray-50 transition">
+                                  <MinusIcon className="w-4 h-4 text-gray-700" />
+                                </button>
+                                <button aria-label={`Increase ${p.name}`} disabled={Boolean(updatingProducts[p._id])} onClick={() => adjustQuantity(p, 1)} className="px-2 py-1 rounded border bg-white hover:bg-gray-50 transition">
+                                  <PlusIcon className="w-4 h-4 text-gray-700" />
+                                </button>
+                                <input onBlur={(e) => setAbsoluteQuantity(p, Number(e.target.value))} defaultValue={Number(p.quantity || 0)} type="number" className="w-20 text-center border px-2 py-1 rounded text-sm" />
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </>
       )}
 
