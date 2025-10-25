@@ -41,6 +41,18 @@ client/.next/
 # ===========================================
 coverage/
 
+# Ignore test files and folders (keep tests out of Git pushes)
+**/tests/
+**/__tests__/
+**/__snapshots__/
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.ts
+*.spec.tsx
+
 # ===========================================
 # Environment Files
 # (Uncomment if you want to commit example env files)
