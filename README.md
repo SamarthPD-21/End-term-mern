@@ -7,8 +7,8 @@ This README has been updated to match the current project configuration (scripts
 
 
 # Admin Access
-Email: bestecom21@gmail.com
-Password: 123123123
+- Email: bestecom21@gmail.com
+- Password: 123123123
 
 ## What changed (high level)
 
