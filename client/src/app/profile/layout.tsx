@@ -44,8 +44,18 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
         notify.error('Failed to sign out');
       }
     } finally {
+      // Ensure local state and persisted storage are cleared immediately to
+      // avoid races where other hooks read stale user data and trigger
+      // re-authentication. Then reload so the app reflects the logged-out
+      // server state (cookie cleared) and any server-side rendered pages
+      // update accordingly.
+      try { localStorage.removeItem('user'); } catch (_) {}
       dispatch(resetUser()); // Reset Redux user state
       setBusy(false);
+      // Hard reload to make sure cookies/localStorage sync and no background
+      // fetch re-establishes the session. This mirrors the login flow which
+      // also reloads after authentication.
+      window.setTimeout(() => window.location.reload(), 60);
     }
   };
 

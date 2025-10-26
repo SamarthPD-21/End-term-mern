@@ -211,11 +211,11 @@ export default function Products() {
                   Launching Soon
                 </h2>
 
-                {/* Horizontal carousel for launching soon products */}
-                <div className="-mx-4 px-4 overflow-x-auto no-scrollbar">
-                  <div className="flex gap-6 py-4 snap-x snap-mandatory">
+                {/* Grid for launching soon products — up to 4 columns, wraps into rows */}
+                <div className="mt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 py-4">
                     {launching.map((p: LaunchProduct, idx: number) => (
-                      <div key={p.id || p._id || idx} className="snap-center min-w-[260px] max-w-[320px]">
+                      <div key={p.id || p._id || idx} className="w-full">
                         <ProductCard product={p as ProductType} setNotice={setNotice} />
                       </div>
                     ))}

@@ -114,7 +114,7 @@ export default function SustainableProducts() {
           </h2>
       
           {/* Dynamic Grid for Any Number of Products */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} setNotice={() => {}} />
             ))}
@@ -180,40 +180,40 @@ export default function SustainableProducts() {
 
       {/* Related Product Categories */}
       <section className="bg-veblyssSecondary py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {relatedCategories.map((category) => (
-              <div
-                key={category.name}
-                className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300"
-              >
-                <div className="h-64 bg-gray-300 relative overflow-hidden">
-                  <div className="w-full h-full bg-gray-300">
-                    <Image
-                      src='/images/placeholder.png'
-                      alt={category.name}
-                      className="object-cover w-full h-full"
-                      layout="fill"
-                    />
-                  </div>
-                </div>
-                <div className="p-6 text-center">
-                  <h3 className="font-playfair font-semibold text-lg text-veblyssText mb-4">
-                    {category.name}
-                  </h3>
-                  <Link
-                    href={category.href}
-                    className="inline-block text-veblyssTextLight font-opensans font-bold text-sm px-4 py-2 rounded-xl hover:bg-opacity-90 transition-all duration-300"
-                    style={{ backgroundColor: "#368581", color: "#FAF9F6" }}
-                  >
-                    Check More
-                  </Link>
+              <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {relatedCategories.map((category) => (
+                    <div
+                      key={category.name}
+                      className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300"
+                    >
+                      <div className="h-64 bg-gray-300 relative overflow-hidden">
+                        <div className="w-full h-full bg-gray-300">
+                                  <Image
+                                    src={category.image ?? '/images/placeholder.png'}
+                                    alt={category.name}
+                                    className="object-cover w-full h-full"
+                                    fill
+                                  />
+                        </div>
+                      </div>
+                      <div className="p-6 text-center">
+                        <h3 className="font-playfair font-semibold text-lg text-veblyssText mb-4">
+                          {category.name}
+                        </h3>
+                        <Link
+                          href={category.href}
+                          className="inline-block text-veblyssTextLight font-opensans font-bold text-sm px-4 py-2 rounded-xl hover:bg-opacity-90 transition-all duration-300"
+                          style={{ backgroundColor: "#368581", color: "#FAF9F6" }}
+                        >
+                          Check More
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </section>
     </div>
   );
 }
