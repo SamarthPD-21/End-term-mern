@@ -10,6 +10,11 @@ This README has been updated to match the current project configuration (scripts
 - Email: bestecom21@gmail.com
 - Password: 123123123
 
+
+# Disclaimer
+- The server on first load is laggy so please try for few times and then proceed as the server is hosted on free service.
+
+
 ## What changed (high level)
 
 - Server package name: `spd-global-server` (see `server/package.json`).
