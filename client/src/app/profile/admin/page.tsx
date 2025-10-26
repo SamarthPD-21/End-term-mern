@@ -118,6 +118,45 @@ export default function AdminPanel() {
   // re-run when loading or isAdmin changes (wait for user resolution)
   }, [loading, isAdmin]);
 
+  // Promise-based modal helper: opens confirm/input modal and resolves with user response
+  const [confirmInputValue, setConfirmInputValue] = useState<string>('');
+  const [panelView, setPanelView] = useState<'home' | 'admin' | 'products' | 'orders' | 'restock' | 'contact'>('home');
+  // admin contact messages state
+  const [contacts, setContacts] = useState<Array<any>>([]);
+  const [contactsPage, setContactsPage] = useState<number>(1);
+  const [contactsPageSize] = useState<number>(50);
+  const [contactsTotal, setContactsTotal] = useState<number>(0);
+  const [contactsLoading, setContactsLoading] = useState<boolean>(false);
+
+  // load contacts when admin opens contact panel
+  const loadContacts = useCallback(async (page = 1, q?: string) => {
+    try {
+      setContactsLoading(true);
+      const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('pageSize', String(contactsPageSize));
+      if (q) params.set('q', q);
+      const res = await fetch(`${API}/api/admin/contacts?${params.toString()}`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load contacts');
+      const json = await res.json();
+      setContacts(json.items || []);
+      setContactsTotal(json.total || 0);
+      setContactsPage(json.page || page);
+    } catch (err) {
+      console.error('loadContacts error', err);
+      rtToast.error('Failed to load contacts');
+    } finally {
+      setContactsLoading(false);
+    }
+  }, [contactsPageSize]);
+
+  useEffect(() => {
+    if (panelView === 'contact' && isAdmin) {
+      loadContacts(1);
+    }
+  }, [panelView, isAdmin, loadContacts]);
+
   
 
   // audits
@@ -157,9 +196,6 @@ export default function AdminPanel() {
     }
   }, [auditPageSize]);
 
-  // Promise-based modal helper: opens confirm/input modal and resolves with user response
-  const [confirmInputValue, setConfirmInputValue] = useState<string>('');
-  const [panelView, setPanelView] = useState<'home' | 'admin' | 'products' | 'orders' | 'restock'>('home');
   // When opening orders view, fetch orders
   useEffect(() => {
     if (panelView === 'orders' && isAdmin) loadOrders(1, ordersQuery);
@@ -513,7 +549,95 @@ export default function AdminPanel() {
             <h3 className="text-lg font-semibold mb-2">Restock</h3>
             <p className="text-sm text-gray-500">Quickly increase or decrease stock for products. Useful for inventory adjustments.</p>
           </div>
+          <div onClick={() => setPanelView('contact')} role="button" className="p-6 cursor-pointer rounded-lg border hover:shadow-lg transition transform-gpu hover:-translate-y-1">
+            <h3 className="text-lg font-semibold mb-2">Contact Messages</h3>
+            <p className="text-sm text-gray-500">View messages submitted via the public contact form.</p>
+          </div>
         </div>
+      )}
+
+      {/* Contact messages view */}
+      {panelView === 'contact' && (
+        <>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPanelView('home')} className="px-3 py-1 rounded border">← Back</button>
+            <h2 className="text-lg font-medium">Contact Messages</h2>
+          </div>
+
+          <div className="p-4 bg-white rounded-md border mt-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="font-medium">Messages</h3>
+                <p className="text-sm text-gray-500">Messages submitted by visitors via the contact page. You can delete items if needed.</p>
+              </div>
+              <div>
+                <button onClick={() => loadContacts(contactsPage)} className="px-3 py-2 bg-gray-100 rounded">Refresh</button>
+              </div>
+            </div>
+
+            <div className="overflow-auto max-h-96">
+              {contactsLoading ? (
+                <div className="p-8 flex items-center justify-center"><Spinner /> <div className="ml-3 text-sm text-gray-600">Loading messages…</div></div>
+              ) : contacts.length === 0 ? (
+                <div className="p-6 text-center text-sm text-gray-500">No messages found</div>
+              ) : (
+                <table className="w-full text-left table-auto border-collapse">
+                  <thead>
+                    <tr className="text-xs text-gray-600 border-b">
+                      <th className="py-2 px-2">Time</th>
+                      <th className="py-2 px-2">Name</th>
+                      <th className="py-2 px-2">Email</th>
+                      <th className="py-2 px-2">Phone</th>
+                      <th className="py-2 px-2">Interest</th>
+                      <th className="py-2 px-2">Message</th>
+                      <th className="py-2 px-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contacts.map((c) => (
+                      <tr key={c._id} className="border-b hover:bg-gray-50 text-sm align-top">
+                        <td className="py-2 px-2 align-top">{new Date(c.createdAt).toLocaleString()}</td>
+                        <td className="py-2 px-2 align-top">{(c.firstName || '') + (c.lastName ? ' ' + c.lastName : '')}</td>
+                        <td className="py-2 px-2 align-top">{c.email}</td>
+                        <td className="py-2 px-2 align-top">{c.phone || '-'}</td>
+                        <td className="py-2 px-2 align-top">{c.productInterest || '-'}</td>
+                        <td className="py-2 px-2 align-top"><div className="max-w-xl break-words text-sm text-gray-700">{c.message}</div></td>
+                        <td className="py-2 px-2 align-top">
+                          <button onClick={async () => {
+                            if (!confirm('Delete this message?')) return;
+                            try {
+                              const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+                              const res = await fetch(`${API}/api/admin/contacts/${c._id}`, { method: 'DELETE', credentials: 'include' });
+                              if (!res.ok) {
+                                const j = await res.json().catch(() => ({}));
+                                rtToast.error(j?.error || 'Failed to delete');
+                                return;
+                              }
+                              rtToast.success('Deleted');
+                              // refresh
+                              loadContacts(contactsPage);
+                            } catch (err) {
+                              console.error('delete contact failed', err);
+                              rtToast.error('Failed to delete');
+                            }
+                          }} className="px-2 py-1 rounded bg-red-50 text-red-600 text-sm">Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div className="mt-2 flex items-center justify-between text-sm">
+              <div>{contacts.length > 0 ? `Showing ${contacts.length} of ${contactsTotal}` : 'No messages'}</div>
+              <div className="flex gap-2">
+                <button disabled={contactsPage <= 1} onClick={() => loadContacts(Math.max(1, contactsPage - 1))} className="px-2 py-1 border rounded">Prev</button>
+                <button disabled={(contactsPage * contactsPageSize) >= contactsTotal} onClick={() => loadContacts(contactsPage + 1)} className="px-2 py-1 border rounded">Next</button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Admin Settings view */}

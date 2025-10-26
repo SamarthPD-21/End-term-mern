@@ -2,6 +2,7 @@ import express from "express";
 import isAuth from "../middleware/auth.middleware.js";
 import isAdmin from "../middleware/admin.middleware.js";
 import { createProduct, makeAdmin, demoteAdmin, listUsers, listAudits } from "../controllers/admin.controller.js";
+import { listContacts, deleteContact } from "../controllers/contact.controller.js";
 import upload from "../middleware/multer.js";
 
 const router = express.Router();
@@ -30,6 +31,9 @@ router.post("/remove-admin", isAuth, isAdmin, express.json(), demoteAdmin);
 // list users for admin panel
 router.get("/users", isAuth, isAdmin, listUsers);
 router.get("/audits", isAuth, isAdmin, listAudits);
+// admin: view contact submissions
+router.get('/contacts', isAuth, isAdmin, listContacts);
+router.delete('/contacts/:id', isAuth, isAdmin, deleteContact);
 router.get("/orders", isAuth, isAdmin, (req, res, next) => import('../controllers/admin.controller.js').then(m => m.listOrders(req, res, next)).catch(next));
 router.patch('/orders/:orderId/status', isAuth, isAdmin, express.json(), (req, res, next) => import('../controllers/admin.controller.js').then(m => m.updateOrderStatus(req, res, next)).catch(next));
 

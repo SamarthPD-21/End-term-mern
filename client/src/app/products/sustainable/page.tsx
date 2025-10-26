@@ -61,14 +61,14 @@ export default function SustainableProducts() {
     { name: "Handicrafts", href: "/products/handicrafts", image: "/images/products/handicrafts/hero.png" },
   ];
 
-  
 
-  
 
-  
+
+
+
 
   return (
-  <div className="bg-spdBackground">
+    <div className="bg-spdBackground">
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         <div className="absolute inset-0">
@@ -84,7 +84,7 @@ export default function SustainableProducts() {
           </h1>
           <p className="font-opensans font-semibold text-xl md:text-2xl lg:text-3xl text-spdTextLight mb-12 max-w-4xl"
             style={{ color: "#FAF9F6", fontFamily: "Open Sans" }}>
-              Caring for tomorrow, today.
+            Caring for tomorrow, today.
           </p>
         </div>
       </section>
@@ -112,16 +112,16 @@ export default function SustainableProducts() {
           >
             Our Product Range
           </h2>
-      
+
           {/* Dynamic Grid for Any Number of Products */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} setNotice={() => {}} />
+              <ProductCard key={product.id} product={product} setNotice={() => { }} />
             ))}
           </div>
         </div>
       </section>
-      
+
 
       {/* Why Choose Our Leather Products */}
       <section className="bg-veblyssSecondary py-16 relative">
@@ -136,7 +136,7 @@ export default function SustainableProducts() {
 
         <div className="relative z-10 container mx-auto px-4">
           <h2 className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary text-center mb-12 "
-            style={{color: "#368581", fontFamily: "Playfair Display"}}>
+            style={{ color: "#368581", fontFamily: "Playfair Display" }}>
             Why Choose Our Leather Products
           </h2>
 
@@ -159,7 +159,7 @@ export default function SustainableProducts() {
       <section className="bg-veblyssSecondary py-16">
         <div className="container mx-auto px-4">
           <h2 className="font-playfair font-bold text-4xl lg:text-5xl text-veblyssPrimary text-center mb-12"
-            style={{color: "#368581", fontFamily: "Playfair Display"}}>
+            style={{ color: "#368581", fontFamily: "Playfair Display" }}>
             Ideal For
           </h2>
 
@@ -180,40 +180,40 @@ export default function SustainableProducts() {
 
       {/* Related Product Categories */}
       <section className="bg-veblyssSecondary py-16">
-              <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {relatedCategories.map((category) => (
-                    <div
-                      key={category.name}
-                      className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300"
-                    >
-                      <div className="h-64 bg-gray-300 relative overflow-hidden">
-                        <div className="w-full h-full bg-gray-300">
-                                  <Image
-                                    src={category.image ?? '/images/placeholder.png'}
-                                    alt={category.name}
-                                    className="object-cover w-full h-full"
-                                    fill
-                                  />
-                        </div>
-                      </div>
-                      <div className="p-6 text-center">
-                        <h3 className="font-playfair font-semibold text-lg text-veblyssText mb-4">
-                          {category.name}
-                        </h3>
-                        <Link
-                          href={category.href}
-                          className="inline-block text-veblyssTextLight font-opensans font-bold text-sm px-4 py-2 rounded-xl hover:bg-opacity-90 transition-all duration-300"
-                          style={{ backgroundColor: "#368581", color: "#FAF9F6" }}
-                        >
-                          Check More
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {relatedCategories.map((category) => (
+              <div
+                key={category.name}
+                className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300"
+              >
+                <div className="h-64 bg-gray-300 relative overflow-hidden">
+                  <div className="w-full h-full bg-gray-300">
+                    <Image
+                      src={category.image ?? '/images/placeholder.png'}
+                      alt={category.name}
+                      className="object-cover w-full h-full"
+                      fill
+                    />
+                  </div>
+                </div>
+                <div className="p-6 text-center">
+                  <h3 className="font-playfair font-semibold text-lg text-veblyssText mb-4">
+                    {category.name}
+                  </h3>
+                  <Link
+                    href={category.href}
+                    className="inline-block text-veblyssTextLight font-opensans font-bold text-sm px-4 py-2 rounded-xl hover:bg-opacity-90 transition-all duration-300"
+                    style={{ backgroundColor: "#368581", color: "#FAF9F6" }}
+                  >
+                    Check More
+                  </Link>
                 </div>
               </div>
-            </section>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

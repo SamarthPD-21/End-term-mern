@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { toast as rtToast } from 'react-toastify';
 
 export default function Contact() {
   return (
@@ -36,71 +37,73 @@ export default function Contact() {
                 Get In Touch
               </h2>
 
-              <form className="space-y-6">
+              {/* contact form: removed Company Name field per request and added submit handler */}
+              <form className="space-y-6" onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget as HTMLFormElement;
+                const fd = new FormData(form);
+                // build payload
+                const payload = {
+                  firstName: String(fd.get('firstName') || '').trim(),
+                  lastName: String(fd.get('lastName') || '').trim(),
+                  email: String(fd.get('email') || '').trim(),
+                  phone: String(fd.get('phone') || '').trim(),
+                  productInterest: String(fd.get('productInterest') || '').trim(),
+                  message: String(fd.get('message') || '').trim(),
+                  source: window.location.pathname,
+                };
+
+                if (!payload.firstName || !payload.email || !payload.message) {
+                  // minimal client validation
+                  rtToast.error('Please provide First name, Email and Message');
+                  return;
+                }
+
+                try {
+                  const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+                  const url = API ? `${API}/api/contact` : '/api/contact';
+                  const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include',
+                  });
+                  if (!res.ok) {
+                    const j = await res.json().catch(() => ({}));
+                    rtToast.error(j?.error || 'Failed to send message');
+                    return;
+                  }
+                  form.reset();
+                  rtToast.success('Message sent — we will get back to you shortly.');
+                } catch (err) {
+                  console.error('contact submit failed', err);
+                  rtToast.error('Failed to send message');
+                }
+              }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block font-opensans font-semibold text-gray-700 mb-2">
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent"
-                      placeholder="Enter your first name"
-                    />
+                    <label className="block font-opensans font-semibold text-gray-700 mb-2">First Name *</label>
+                    <input name="firstName" type="text" required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent" placeholder="Enter your first name" />
                   </div>
                   <div>
-                    <label className="block font-opensans font-semibold text-gray-700 mb-2">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent"
-                      placeholder="Enter your last name"
-                    />
+                    <label className="block font-opensans font-semibold text-gray-700 mb-2">Last Name</label>
+                    <input name="lastName" type="text" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent" placeholder="Enter your last name" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent"
-                    placeholder="Enter your email address"
-                  />
+                  <label className="block font-opensans font-semibold text-gray-700 mb-2">Email Address *</label>
+                  <input name="email" type="email" required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent" placeholder="Enter your email address" />
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-gray-700 mb-2">
-                    Company Name
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent"
-                    placeholder="Enter your company name"
-                  />
+                  <label className="block font-opensans font-semibold text-gray-700 mb-2">Phone Number</label>
+                  <input name="phone" type="tel" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent" placeholder="Enter your phone number" />
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent"
-                    placeholder="Enter your phone number"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-opensans font-semibold text-gray-700 mb-2">
-                    Product Interest
-                  </label>
-                  <select className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent">
+                  <label className="block font-opensans font-semibold text-gray-700 mb-2">Product Interest</label>
+                  <select name="productInterest" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent">
                     <option value="">Select product category</option>
                     <option value="leather">Leather Products</option>
                     <option value="copper">Copper Products</option>
@@ -112,23 +115,11 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label className="block font-opensans font-semibold text-gray-700 mb-2">
-                    Message *
-                  </label>
-                  <textarea
-                    required
-                    rows={5}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent resize-none"
-                    placeholder="Tell us about your requirements, quantity, target markets, or any specific questions..."
-                  ></textarea>
+                  <label className="block font-opensans font-semibold text-gray-700 mb-2">Message *</label>
+                  <textarea name="message" required rows={5} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#368581] focus:border-transparent resize-none" placeholder="Tell us about your requirements, quantity, target markets, or any specific questions..."></textarea>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-[#368581] text-[#FAF9F6] font-opensans font-bold text-lg p-4 rounded-xl hover:bg-opacity-90 transition-all duration-300"
-                >
-                  Send Message
-                </button>
+                <button type="submit" className="w-full bg-[#368581] text-[#FAF9F6] font-opensans font-bold text-lg p-4 rounded-xl hover:bg-opacity-90 transition-all duration-300">Send Message</button>
               </form>
             </div>
 

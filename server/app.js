@@ -7,6 +7,7 @@ import cartRoutes from './routes/cart.route.js';
 import adminRouter from './routes/admin.routes.js';
 import debugRouter from './routes/debug.routes.js';
 import productRouter from './routes/product.routes.js';
+import contactRouter from './routes/contact.routes.js';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/admin', adminRouter);
 app.use('/api/products', productRouter);
 app.use('/api/debug', debugRouter);
+app.use('/api/contact', contactRouter);
 
 // Error handler (must be after routes)
 app.use((err, req, res, next) => {
