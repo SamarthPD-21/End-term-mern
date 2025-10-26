@@ -9,7 +9,7 @@ import type { Product as ProductType } from '@/components/ProductCard';
 import { notify } from '@/lib/toast';
 
 export default function Products() {
-  type LaunchProduct = { _id?: string; id?: string; launchAt?: string | null; name?: string; price?: number; image?: string; description?: string };
+  type LaunchProduct = { _id?: string; id?: string; launchAt?: string | null; name?: string; price?: number; image?: string; description?: string; quantity?: number; countInStock?: number; stock?: number };
   const [launching, setLaunching] = useState<LaunchProduct[]>([]);
   const [, setNotice] = useState<string | null>(null);
 
@@ -24,7 +24,7 @@ export default function Products() {
         const products = resp.data?.products || resp.data || [];
         setLaunching((products as unknown[]).map((p) => {
           const pp = p as LaunchProduct;
-          return { ...pp, id: pp._id || pp.id };
+          return { ...pp, id: pp._id || pp.id, quantity: pp.quantity ?? pp.countInStock ?? pp.stock ?? 0 };
         }));
       } catch (err) {
         console.error('Failed to load launching soon products', err);

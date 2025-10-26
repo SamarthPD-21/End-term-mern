@@ -1,5 +1,5 @@
 import express from "express";
-import { listProducts, getProductById, updateProduct, deleteProduct, getProductsBatch, listProductComments, addProductComment, editProductComment, deleteProductComment, adjustProductQuantity, addProductCommentReply } from "../controllers/product.controller.js";
+import { listProducts, getProductById, updateProduct, deleteProduct, getProductsBatch, listProductComments, addProductComment, editProductComment, deleteProductComment, adjustProductQuantity, addProductCommentReply, deleteCommentReply } from "../controllers/product.controller.js";
 import isAuth from "../middleware/auth.middleware.js";
 import isAdmin from "../middleware/admin.middleware.js";
 import upload from "../middleware/multer.js";
@@ -18,8 +18,10 @@ router.post('/:id/comments', isAuth, addProductComment);
 // edit/delete a specific comment (owner or admin)
 router.put('/:id/comments/:commentId', isAuth, editProductComment);
 router.delete('/:id/comments/:commentId', isAuth, deleteProductComment);
-// admin reply to a comment
-router.post('/:id/comments/:commentId/reply', isAuth, isAdmin, addProductCommentReply);
+// anyone authenticated can reply; admin replies will be marked server-side
+router.post('/:id/comments/:commentId/reply', isAuth, addProductCommentReply);
+// delete a reply (owner or admin)
+router.delete('/:id/comments/:commentId/replies/:replyId', isAuth, deleteCommentReply);
 
 // batch: POST /api/products/batch { ids: [...] }
 router.post('/batch', getProductsBatch);

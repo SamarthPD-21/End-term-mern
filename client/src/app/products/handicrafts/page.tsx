@@ -26,6 +26,7 @@ export default function IndianHandicrafts() {
               reviewCount: p.reviewCount ?? (p.reviews ? p.reviews.length : 0),
               description: p.description ?? undefined,
               launchAt: p.launchAt ?? undefined,
+              quantity: p.quantity ?? p.countInStock ?? p.stock ?? 0,
             }))
           );
         }

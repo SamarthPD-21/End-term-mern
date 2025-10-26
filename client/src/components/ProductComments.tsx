@@ -9,10 +9,12 @@ import { notify } from '@/lib/toast';
 import { confirmWithToast } from '@/lib/confirm';
 
 interface Reply {
-  adminId?: string;
-  adminName?: string;
-  adminImage?: string | null;
+  _id?: string;
+  userId?: string;
+  name?: string;
+  profileImage?: string | null;
   text?: string;
+  isAdmin?: boolean;
   createdAt?: string;
 }
 
@@ -25,7 +27,7 @@ interface Comment {
   text?: string;
   createdAt?: string;
   isEditing?: boolean;
-  reply?: Reply | null;
+  replies?: Reply[];
 }
 
 export default function ProductComments({ productId }: { productId: string }) {
@@ -38,6 +40,7 @@ export default function ProductComments({ productId }: { productId: string }) {
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
   const [replyVisible, setReplyVisible] = useState<Record<string, boolean>>({});
+  const [showReplies, setShowReplies] = useState<Record<string, boolean>>({});
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
   const [total, setTotal] = useState(0);
@@ -81,13 +84,12 @@ export default function ProductComments({ productId }: { productId: string }) {
       setReplyVisible((prev) => {
         const next = { ...prev };
         try {
-          (comments || []).forEach((c) => {
-            if (c._id && c.reply) {
-              next[String(c._id)] = true;
-            }
-            // if reply exists but _id is missing for some reason, still set by index fallback
-            else if (c.reply) {
-              next[String(c._id || '')] = true;
+          (comments || []).forEach((c, i) => {
+            const hasReply = Array.isArray(c.replies) ? c.replies.length > 0 : false;
+            if (hasReply) {
+              // prefer stable _id when present, otherwise use index as fallback
+              const key = String(c._id ?? i);
+              next[key] = true;
             }
           });
         } catch {
@@ -231,57 +233,99 @@ export default function ProductComments({ productId }: { productId: string }) {
                   <>
                     <div className="text-gray-700 mt-2">{c.text}</div>
 
-                    {c.reply && (
-                      <div className="mt-3">
-                        <div
-                          className={`flex items-start gap-3 bg-gray-50 rounded-md p-3 border-l-4 border-emerald-400 transition-all duration-300 transform ${replyVisible[cid] ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}
-                        >
-                          <div className="flex-shrink-0">
-                            {c.reply.adminImage ? (
-                              <Image src={c.reply.adminImage} alt={c.reply.adminName || 'Admin'} width={36} height={36} className="w-9 h-9 rounded-full object-cover" />
-                            ) : (
-                              <div className="w-9 h-9 rounded-full bg-emerald-400 text-white flex items-center justify-center font-semibold text-sm">
-                                {(String(c.reply.adminName || 'A').split(' ').map(s=>s[0]).slice(0,2).join('') || 'A')}
-                              </div>
-                            )}
+                    {Array.isArray(c.replies) && c.replies.length > 0 && (() => {
+                      const visible = Boolean(showReplies[cid]);
+                      return (
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">{c.replies.length} repl{c.replies.length === 1 ? 'y' : 'ies'}</div>
+                            <button onClick={() => {
+                              setShowReplies(s => ({ ...s, [cid]: !s[cid] }));
+                              // trigger reveal animation when showing
+                              if (!showReplies[cid]) {
+                                setTimeout(() => setReplyVisible(s => ({ ...s, [cid]: true })), 20);
+                              }
+                            }} className="text-xs px-2 py-1 bg-gray-100 rounded">
+                              {visible ? 'Hide replies' : 'Show replies'}
+                            </button>
                           </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-2">
-                                <div className="text-sm font-semibold text-emerald-800">{c.reply.adminName || 'Admin'}</div>
-                                <span className="inline-block text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Replied</span>
-                              </div>
-                              <div className="text-xs text-gray-400">{new Date(c.reply.createdAt || '').toLocaleString()}</div>
+
+                          {visible && (
+                            <div className="mt-2 space-y-2">
+                              {(c.replies || []).map((r) => {
+                                const rid = String(r._id || r.createdAt || Math.random());
+                                const canDelete = user?.isAdmin || String(user?._id || user?.id) === String(r.userId);
+                                return (
+                                  <div key={rid} className={`flex items-start gap-3 bg-gray-50 rounded-md p-3 border-l-4 border-emerald-400 transition-all duration-300 transform ${replyVisible[cid] ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+                                    <div className="flex-shrink-0">
+                                      {r.profileImage ? (
+                                        <Image src={r.profileImage} alt={r.name || 'User'} width={36} height={36} className="w-9 h-9 rounded-full object-cover" />
+                                      ) : (
+                                        <div className="w-9 h-9 rounded-full bg-emerald-400 text-white flex items-center justify-center font-semibold text-sm">
+                                          {(String(r.name || 'A').split(' ').map(s=>s[0]).slice(0,2).join('') || 'A')}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2">
+                                          <div className="text-sm font-semibold text-emerald-800">{r.name || 'User'}</div>
+                                          {r.isAdmin && <span className="inline-block text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Admin</span>}
+                                        </div>
+                                        <div className="text-xs text-gray-400">{new Date(r.createdAt || '').toLocaleString()}</div>
+                                      </div>
+                                      <div className="mt-1 text-gray-800 text-sm">{r.text}</div>
+                                      <div className="mt-2">
+                                        {canDelete && (
+                                          <button onClick={async () => {
+                                            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/';
+                                            try {
+                                              await axios.delete(`${API_URL}api/products/${productId}/comments/${c._id}/replies/${r._id}`, { withCredentials: true });
+                                              setComments((s) => s.map((it) => (String(it._id) === String(c._id) ? { ...it, replies: (it.replies || []).filter(rr => String(rr._id) !== String(r._id)) } : it)));
+                                              notify.success('Reply deleted');
+                                            } catch (err) {
+                                              console.error('delete reply error', err);
+                                              notify.error('Failed to delete reply');
+                                            }
+                                          }} className="px-3 py-1 bg-red-100 rounded text-xs">Delete</button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                            <div className="mt-1 text-gray-800 text-sm">{c.reply.text}</div>
-                          </div>
+                          )}
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     <div className="mt-3 flex items-center gap-2">
+                      {/* show edit/delete for comment owner */}
                       {(user && (String(user._id || user.id) === String(c.userId))) && (
                         <>
                           <button onClick={() => startEdit(c)} className="px-3 py-1 bg-yellow-100 rounded">Edit</button>
                           <button onClick={() => remove(c)} className="px-3 py-1 bg-red-100 rounded">Delete</button>
                         </>
                       )}
+
+                      {/* any authenticated user can reply */}
+                      {user && (
+                        <button onClick={() => {
+                          setReplyDrafts((s) => ({ ...s, [cid]: '' }));
+                          setReplyOpen((s) => ({ ...s, [cid]: true }));
+                        }} className="px-3 py-1 bg-blue-100 rounded">Reply</button>
+                      )}
+
+                      {/* admins can delete any comment */}
                       {user?.isAdmin && (
-                        <>
-                          {/* Admins can delete any comment */}
-                          <button onClick={() => remove(c)} className="px-3 py-1 bg-red-100 rounded">Delete</button>
-                          {/* Admin reply control (reply or edit) */}
-                              <button onClick={() => {
-                            setReplyDrafts((s) => ({ ...s, [cid]: c.reply?.text || '' }));
-                            setReplyOpen((s) => ({ ...s, [cid]: true }));
-                          }} className="px-3 py-1 bg-blue-100 rounded">{c.reply ? 'Edit Reply' : 'Reply'}</button>
-                        </>
+                        <button onClick={() => remove(c)} className="px-3 py-1 bg-red-100 rounded">Delete</button>
                       )}
                     </div>
 
-                    {user?.isAdmin && replyOpen[cid] && (
+                    {user && replyOpen[cid] && (
                       <div className="mt-3">
-                        <textarea value={replyDrafts[cid] ?? (c.reply?.text ?? '')} onChange={(e) => setReplyDrafts((s) => ({ ...s, [cid]: e.target.value }))} className="w-full p-2 border rounded mb-2" placeholder="Write a reply to this comment" />
+                        <textarea value={replyDrafts[cid] ?? ''} onChange={(e) => setReplyDrafts((s) => ({ ...s, [cid]: e.target.value }))} className="w-full p-2 border rounded mb-2" placeholder="Write a reply to this comment" />
                         <div className="flex gap-2">
                           <button onClick={async () => {
                             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/';
@@ -290,8 +334,10 @@ export default function ProductComments({ productId }: { productId: string }) {
                               if (!text) { notify.error('Reply cannot be empty'); return; }
                               const resp = await axios.post(`${API_URL}api/products/${productId}/comments/${c._id}/reply`, { text }, { withCredentials: true });
                               const updated = resp.data.comment || resp.data;
-                              const newReply = updated.reply || resp.data.reply || null;
-                              setComments((s) => s.map((it) => (String(it._id) === String(c._id) ? { ...it, reply: newReply } : it)));
+                              const newReply = updated.replies ? updated.replies[updated.replies.length - 1] : (resp.data.reply || null);
+                              setComments((s) => s.map((it) => (String(it._id) === String(c._id) ? { ...it, replies: updated.replies || (it.replies || []).concat(newReply ? [newReply] : []) } : it)));
+                              // ensure replies are shown when a user posts one
+                              setShowReplies((s) => ({ ...s, [cid]: true }));
                               // reveal with animation using consistent string key
                               setReplyVisible((s) => ({ ...s, [cid]: false }));
                               setTimeout(() => setReplyVisible((s) => ({ ...s, [cid]: true })), 20);
@@ -308,6 +354,28 @@ export default function ProductComments({ productId }: { productId: string }) {
                         </div>
                       </div>
                     )}
+                    {/* allow deleting individual replies if owner or admin */}
+                    {Array.isArray(c.replies) && c.replies.length > 0 && user && (() => {
+                      const adminReply = c.replies.find(r => r.isAdmin);
+                      const primary = adminReply || c.replies[c.replies.length - 1];
+                      const canDeleteReply = user.isAdmin || String(user._id || user.id) === String(primary.userId);
+                      return canDeleteReply ? (
+                        <div className="mt-2">
+                          <button onClick={async () => {
+                            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/';
+                            try {
+                              const replyId = primary._id;
+                              await axios.delete(`${API_URL}api/products/${productId}/comments/${c._id}/replies/${replyId}`, { withCredentials: true });
+                              setComments((s) => s.map((it) => (String(it._id) === String(c._id) ? { ...it, replies: (it.replies || []).filter(r => String(r._id) !== String(replyId)) } : it)));
+                              notify.success('Reply deleted');
+                            } catch (err) {
+                              console.error('delete reply error', err);
+                              notify.error('Failed to delete reply');
+                            }
+                          }} className="px-3 py-1 bg-red-100 rounded">Delete Reply</button>
+                        </div>
+                      ) : null;
+                    })()}
                   </>
                 )}
               </div>

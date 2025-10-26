@@ -5,6 +5,11 @@ This repository contains a full-stack MERN (MongoDB, Express, React/Next.js, Nod
 
 This README has been updated to match the current project configuration (scripts, env var names, and config behavior) discovered in the `server/` and `client/` packages.
 
+
+# Admin Access
+Email: bestecom21@gmail.com
+Password: 123123123
+
 ## What changed (high level)
 
 - Server package name: `spd-global-server` (see `server/package.json`).
