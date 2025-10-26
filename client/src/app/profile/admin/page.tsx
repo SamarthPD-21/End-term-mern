@@ -116,7 +116,7 @@ export default function AdminPanel() {
       loadAudits(1);
     }
   // re-run when loading or isAdmin changes (wait for user resolution)
-  }, [loading, isAdmin, loadAudits]);
+  }, [loading, isAdmin]);
 
   
 
