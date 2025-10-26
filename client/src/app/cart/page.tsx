@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/redux/store'
 import { getCurrentUser } from '@/lib/User'
-import { setUser, updateCartQuantity, removeFromCart, addToCart } from '@/redux/userSlice'
+import { setUser, updateCartQuantity, removeFromCart, restoreCartItem } from '@/redux/userSlice'
 import { toast as rtToast } from 'react-toastify'
 import { notify } from '@/lib/toast'
 import { REMOVE_ANIM_MS, UNDO_WINDOW_MS, SLIDE_IN_MS, TOAST_DELAY_MS } from '@/lib/cartTiming'
@@ -79,9 +79,9 @@ export default function CartPage() {
         <button className="ml-2 text-xs underline" onClick={onUndo}>Undo</button>
       </div>
     )
-    // react-toastify typing in this project can be narrow; keep cast here
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const id = (rtToast as any).info(content, { autoClose: UNDO_WINDOW_MS })
+    type ToastApi = { info: (content: React.ReactNode, opts?: Record<string, unknown>) => number; update?: (id: number, opts: { render?: string; type?: 'success'|'error'|'info'|'warning'; autoClose?: number }) => void }
+    const toastApi = rtToast as unknown as ToastApi
+    const id = toastApi.info(content, { autoClose: UNDO_WINDOW_MS })
     return id as number
   }
 
@@ -92,12 +92,50 @@ export default function CartPage() {
     if (!removed) return
 
     // show undo toast immediately with the removed product info
-    showUndoToast(pid, removed, () => {
+    const toastId = showUndoToast(pid, removed, async () => {
+      // cancel pending timers (local removal + server finalize)
       const item = cancelPendingRemoval(pid)
       if (!item) return
 
-      // restore locally
-      dispatch(addToCart({ id: String(item.productId || item.id), name: item.name || '', price: Number(item.price || 0), quantity: Number(item.quantity || item.qty || 1), image: item.image }))
+      // Attempt to restore on server in an idempotent way: try PATCH (set exact quantity)
+      // If PATCH doesn't apply (item missing), fall back to POST (add new).
+      let restoredOnServer = false
+      try {
+        const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+        const desiredQty = Number(item.quantity || item.qty || 1)
+
+        // PATCH will set quantity exactly if item exists; avoids doubling when server still has the item.
+        let resp = await fetch(`${API}/api/cart`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: String(item.productId || item.id), quantity: desiredQty }),
+        })
+
+        if (!resp.ok) {
+          // fallback: try POST to add item (server may have deleted it already)
+          resp = await fetch(`${API}/api/cart`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId: String(item.productId || item.id), name: item.name, price: Number(item.price || 0), image: item.image || '/images/placeholder.png', quantity: desiredQty }),
+          })
+        }
+
+        restoredOnServer = !!resp && resp.ok
+        if (!restoredOnServer) {
+          let json: unknown = null
+          try { json = await resp.json() } catch {}
+          const reason = json && typeof json === 'object' && 'message' in json ? String((json as Record<string, unknown>)['message']) : 'Could not restore item on server'
+          notify.error(String(reason))
+        }
+      } catch (err) {
+        console.error('undo: failed to restore on server', err)
+        notify.error('Failed to restore item on server — will restore locally')
+      }
+
+  // restore locally so UI updates immediately (set exact quantity to avoid double-increment bugs)
+  dispatch(restoreCartItem({ id: String(item.productId || item.id), name: item.name || '', price: Number(item.price || 0), quantity: Number(item.quantity || item.qty || 1), image: item.image }))
       setLocalQuantities((s) => ({ ...s, [pid]: Number(item.quantity || item.qty || 1) }))
 
       // clear removing state so the restored row animates back in correctly
@@ -115,7 +153,23 @@ export default function CartPage() {
         return copy
       }), SLIDE_IN_MS)
 
+      // finally, refresh canonical server state
       refreshUser()
+
+      // update the undo toast to reflect server restore outcome
+      try {
+        const toastApi = rtToast as unknown as { update?: (id: number, opts: { render?: string; type?: 'success'|'error'|'info'|'warning'; autoClose?: number }) => void }
+        const updater = toastApi.update
+        if (typeof updater === 'function') {
+          if (restoredOnServer) {
+            updater(toastId, { render: `${item.name ?? 'Item'} restored`, type: 'success', autoClose: 3000 })
+          } else {
+            updater(toastId, { render: `${item.name ?? 'Item'} restored locally (server restore failed)`, type: 'error', autoClose: 5000 })
+          }
+        }
+      } catch {
+        // ignore update failures
+      }
     })
 
     // schedule server finalize after undo window (start timer immediately)
@@ -292,10 +346,17 @@ export default function CartPage() {
 
   // small animation when total changes (accessibility + visual feedback)
   const [totalBumped, setTotalBumped] = useState(false)
+  const [totalDirection, setTotalDirection] = useState<number>(0) // 1 => up, -1 => down
+  const prevTotalRef = useRef<number>(totalPrice)
   useEffect(() => {
-    // animate briefly when total updates
+    // animate briefly when total updates and remember direction
+    const prev = prevTotalRef.current ?? 0
+    const delta = totalPrice - prev
+    const dir = Math.sign(delta) || 0
+    setTotalDirection(dir)
     setTotalBumped(true)
     const t = window.setTimeout(() => setTotalBumped(false), 350)
+    prevTotalRef.current = totalPrice
     return () => clearTimeout(t)
   }, [totalPrice])
 
@@ -366,40 +427,51 @@ export default function CartPage() {
                         </Link>
                       </h3>
                       <div className="flex items-center gap-4 mb-2">
-                        <span className={`text-2xl font-bold transition-colors duration-200 ${bumped[pid] ? 'text-emerald-600' : ''}`}>₹{price.toFixed(2)}</span>
+                        <span className={`text-2xl font-bold transition-colors duration-200 ${lastDelta[pid] === 1 ? 'text-emerald-600' : lastDelta[pid] === -1 ? 'text-red-500' : ''}`}>₹{price.toFixed(2)}</span>
                         <span className={`text-sm ml-2 transition-transform duration-200 ${lastDelta[pid] === 1 ? 'text-emerald-600 scale-105' : lastDelta[pid] === -1 ? 'text-red-500 scale-105' : 'text-gray-500'}`}>Subtotal: ₹{subtotal.toFixed(2)}</span>
                       </div>
 
                       {/* Quantity Controls - unified, animated */}
                       <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => updateQuantity(pid, -1)}
-                          aria-label={`Decrease quantity for ${item.name}`}
-                          className="w-10 h-10 flex items-center justify-center rounded-full border bg-white hover:bg-gray-50 transition-transform hover:scale-105 duration-150"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-veblyssText" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clipRule="evenodd" />
-                          </svg>
-                        </button>
+                        {/** derive last change direction for this item to color buttons briefly */}
+                        {(() => {
+                          const delta = lastDelta[pid] ?? 0
+                          const minusActive = delta === -1
+                          const plusActive = delta === 1
+                          const atMin = qty <= 1
+                          const atMax = typeof availableMap[pid] === 'number' && qty >= availableMap[pid]
+                          return (
+                            <>
+                              <button
+                                onClick={() => updateQuantity(pid, -1)}
+                                aria-label={`Decrease quantity for ${item.name}`}
+                                disabled={atMin}
+                                aria-disabled={atMin}
+                                className={`w-10 h-10 flex items-center justify-center rounded-full border transition-transform duration-150 ${minusActive ? 'scale-105' : 'hover:scale-105'} ${atMin ? 'opacity-50 cursor-not-allowed bg-white' : 'bg-white hover:bg-red-50'}`}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${minusActive ? 'text-red-600' : 'text-red-500'}`} viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clipRule="evenodd" />
+                                </svg>
+                              </button>
 
-                        <div className={`px-4 py-2 border rounded-lg font-mono text-lg transition-transform duration-200 ${bumped[pid] ? 'scale-110 text-emerald-600' : ''}`}>
-                          {qty}
-                        </div>
+                              <div className={`px-4 py-2 border rounded-lg font-mono text-lg transition-transform transition-colors duration-200 ${bumped[pid] ? 'scale-110' : ''} ${lastDelta[pid] === 1 ? 'text-emerald-600' : lastDelta[pid] === -1 ? 'text-red-500' : ''}`}>
+                                {qty}
+                              </div>
 
-                        <button
-                          onClick={() => updateQuantity(pid, 1)}
-                          disabled={typeof availableMap[pid] === 'number' && qty >= availableMap[pid]}
-                          aria-disabled={typeof availableMap[pid] === 'number' && qty >= availableMap[pid]}
-                          title={typeof availableMap[pid] === 'number' && qty >= availableMap[pid] ? 'Reached available stock' : 'Increase quantity'}
-                          className={
-                            "w-10 h-10 flex items-center justify-center rounded-full border bg-white hover:bg-gray-50 transition-transform hover:scale-105 duration-150 " +
-                            (typeof availableMap[pid] === 'number' && qty >= availableMap[pid] ? 'opacity-50 cursor-not-allowed hover:scale-100' : '')
-                          }
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-veblyssText" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                          </svg>
-                        </button>
+                              <button
+                                onClick={() => updateQuantity(pid, 1)}
+                                disabled={atMax}
+                                aria-disabled={atMax}
+                                title={atMax ? 'Reached available stock' : 'Increase quantity'}
+                                className={`w-10 h-10 flex items-center justify-center rounded-full border transition-transform duration-150 ${plusActive ? 'scale-105' : 'hover:scale-105'} ${atMax ? 'opacity-50 cursor-not-allowed bg-white' : 'bg-white hover:bg-emerald-50'}`}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${plusActive ? 'text-emerald-600' : 'text-emerald-500'}`} viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            </>
+                          )
+                        })()}
 
                         <button
                           onClick={() => removeItem(pid)}
@@ -419,7 +491,7 @@ export default function CartPage() {
 
             {/* Total Price & Checkout */}
             <div className="bg-white rounded-xl shadow-lg p-6 text-right flex flex-col md:flex-row justify-between items-center mt-6 sticky bottom-0 z-10">
-              <span className={`text-xl md:text-2xl font-bold text-veblyssText transition-transform duration-250 ${totalBumped ? 'scale-105 text-emerald-600' : ''}`}>
+              <span className={`text-xl md:text-2xl font-bold text-veblyssText transition-transform duration-250 ${totalBumped ? 'scale-105' : ''} ${totalDirection === 1 ? 'text-emerald-600' : totalDirection === -1 ? 'text-red-500' : ''}`}>
                 Total: ₹{totalPrice.toFixed(2)}
               </span>
               {/* Announce changes to assistive tech */}

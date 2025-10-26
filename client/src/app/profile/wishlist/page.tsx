@@ -234,7 +234,7 @@ export default function WishlistPage() {
       ) : wishlistArray.length === 0 ? (
         <p className="text-sm text-gray-600">No saved items.</p>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <ul className="space-y-3">
           {localWishlist.map((entry) => {
             const pid = String(entry.productId || entry.id || "");
             const p = products[pid] as Record<string, unknown> | undefined;
@@ -246,26 +246,36 @@ export default function WishlistPage() {
             const rawPrice = entry.price ?? (p && (typeof p['price'] === 'number' ? (p['price'] as number) : Number(p['price'] ?? 0))) ?? 0;
             const displayPrice = Number(rawPrice || 0);
             return (
-              <li key={pid} className={`bg-white rounded-lg shadow p-4 flex gap-4 items-center relative animate-fade-in`}>
-                <div className="w-24 h-24 relative flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+              <li key={pid} className="bg-white rounded-lg shadow p-3 flex items-center gap-4 animate-fade-in">
+                <div className="w-20 h-20 relative flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
                   <Image src={displayImage} alt={displayName} fill className="object-cover" />
                 </div>
-                <div className="flex-1">
-                  <Link href={`/products/${pid}`} className="font-medium text-sm text-spdText block">{displayName}</Link>
-                  <div className="text-xs text-gray-500">₹{displayPrice.toFixed(2)}</div>
+                <div className="flex-1 min-w-0">
+                  <Link href={`/products/${pid}`} className="font-medium text-sm text-spdText block truncate">{displayName}</Link>
+                  <div className="text-xs text-gray-500 mt-1">₹{displayPrice.toFixed(2)}</div>
                   {launchAt && new Date(launchAt) > new Date() && (
-                    <div className="mt-2 inline-block px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">Launching soon</div>
-                  )}
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  {isLaunched ? (
-                    <button onClick={() => handleMoveToCart(entry)} className="bg-[#368581] text-white px-3 py-1 rounded-md text-sm hover:scale-105 transition-transform">Move to cart</button>
-                  ) : (
-                    <button onClick={() => handleRemove(pid)} className="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm">Remove</button>
+                    <div className="mt-1 inline-block px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">Launching soon</div>
                   )}
                 </div>
 
-                {/* no DOM-based confetti; using canvas-confetti instead */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-center">
+                  {/* Move to cart button: enabled for launched items; shown with note for launching-soon */}
+                  <button
+                    onClick={() => handleMoveToCart(entry)}
+                    className={`px-3 py-1 rounded-md text-sm text-white transition ${isLaunched ? 'bg-[#368581] hover:scale-105' : 'bg-gray-400 cursor-pointer opacity-95'}`}
+                    title={isLaunched ? 'Move this item to your cart' : 'This item is launching soon — you may attempt to add it to cart'}
+                  >
+                    {isLaunched ? 'Move to cart' : 'Move to cart (launching soon)'}
+                  </button>
+
+                  {/* Delete/remove button */}
+                  <button
+                    onClick={() => handleRemove(pid)}
+                    className="px-3 py-1 rounded-md text-sm bg-red-500 text-white hover:opacity-95"
+                  >
+                    Delete
+                  </button>
+                </div>
               </li>
             );
           })}

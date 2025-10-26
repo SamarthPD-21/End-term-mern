@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect, Fragment, useRef } from "react";
+import { useState, useEffect, Fragment, useRef, useCallback } from "react";
 import useCurrentUser from '@/hooks/useCurrentUser';
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -84,7 +84,7 @@ export default function AdminPanel() {
   const [ordersQuery, setOrdersQuery] = useState<string>('');
   const [ordersLoading, setOrdersLoading] = useState<boolean>(false);
 
-  const loadOrders = async (page = 1, q?: string) => {
+  const loadOrders = useCallback(async (page = 1, q?: string) => {
     try {
       setOrdersLoading(true);
       const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
@@ -105,15 +105,18 @@ export default function AdminPanel() {
     } finally {
       setOrdersLoading(false);
     }
-  };
+  }, [ordersPageSize, ordersSort]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // always load public product list for the admin panel (safe)
     load();
-    loadUsers();
-    loadAudits(1);
-  // intentionally run only once on mount; loadAudits is stable within this module
-  }, []);
+    // only attempt admin-only APIs when we know user's admin status
+    if (!loading && isAdmin) {
+      loadUsers();
+      loadAudits(1);
+    }
+  // re-run when loading or isAdmin changes (wait for user resolution)
+  }, [loading, isAdmin, loadAudits]);
 
   
 
@@ -141,7 +144,7 @@ export default function AdminPanel() {
     </svg>
   );
 
-  const loadAudits = async (page = 1, q?: string) => {
+  const loadAudits = useCallback(async (page = 1, q?: string) => {
     try {
       const lib = await import('@/lib/User');
       const res = await lib.fetchAdminAudits(page, auditPageSize, q ?? undefined);
@@ -152,17 +155,15 @@ export default function AdminPanel() {
       console.error('Failed to load audits', err);
       rtToast.error('Failed to load audit logs');
     }
-  };
+  }, [auditPageSize]);
 
   // Promise-based modal helper: opens confirm/input modal and resolves with user response
   const [confirmInputValue, setConfirmInputValue] = useState<string>('');
   const [panelView, setPanelView] = useState<'home' | 'admin' | 'products' | 'orders' | 'restock'>('home');
   // When opening orders view, fetch orders
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (panelView === 'orders') loadOrders(1, ordersQuery);
-
-  }, [panelView]);
+    if (panelView === 'orders' && isAdmin) loadOrders(1, ordersQuery);
+  }, [panelView, isAdmin, ordersQuery, loadOrders]);
 
   // When opening restock view, ensure products are loaded
   useEffect(() => {
@@ -230,9 +231,8 @@ export default function AdminPanel() {
 
   // react to page size / sort changes
   useEffect(() => {
-    if (panelView === 'orders') loadOrders(1, ordersQuery);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ordersPageSize, ordersSort]);
+    if (panelView === 'orders' && isAdmin) loadOrders(1, ordersQuery);
+  }, [ordersPageSize, ordersSort, panelView, isAdmin, ordersQuery, loadOrders]);
   const openConfirmModal = (opts: { title?: string; message?: string; showInput?: boolean; defaultValue?: string; confirmLabel?: string; cancelLabel?: string }) => {
     return new Promise<any>((resolve) => {
       confirmResolveRef.current = resolve;

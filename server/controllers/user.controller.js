@@ -14,11 +14,83 @@ const uploadToCloudinary = (buffer, folder = "profiles") =>
 export const getCurrentUser = async (req, res) => {
   const {userId} = req;
   try {
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    return res.status(200).json(user);
+
+    // Ensure cart and wishlist don't reference deleted or out-of-stock products.
+    // Collect all product identifiers referenced by the user so we can check them in bulk.
+    const referenced = new Set();
+    (user.cartdata || []).forEach((c) => { if (c && c.productId) referenced.add(String(c.productId)); });
+    (user.wishlistdata || []).forEach((w) => { if (w && w.productId) referenced.add(String(w.productId)); });
+
+    if (referenced.size > 0) {
+      // Load Product model dynamically to avoid any possible circular import issues.
+      const Product = await import("../models/product.model.js").then(m => m.default).catch(() => null);
+      if (Product) {
+        const refs = Array.from(referenced);
+
+        // Query for products that match either an ObjectId string or numeric productId
+        const orQueries = refs.map(r => {
+          if (/^[0-9a-fA-F]{24}$/.test(r)) return { _id: r };
+          if (!Number.isNaN(Number(r))) return { productId: Number(r) };
+          return { _id: r };
+        });
+
+        const products = await Product.find({ $or: orQueries }).lean();
+        const foundByKey = new Map();
+        for (const p of products) {
+          // map by both _id and productId (if present)
+          if (p._id) foundByKey.set(String(p._id), p);
+          if (typeof p.productId !== 'undefined' && p.productId !== null) foundByKey.set(String(p.productId), p);
+        }
+
+        const removedFromCart = [];
+        const removedFromWishlist = [];
+
+        // Filter cart: remove items whose product is missing or quantity is 0
+        user.cartdata = (user.cartdata || []).filter((item) => {
+          const key = String(item.productId);
+          const prod = foundByKey.get(key);
+          if (!prod) {
+            removedFromCart.push({ item, reason: 'deleted' });
+            return false; // remove
+          }
+          if (typeof prod.quantity === 'number' && prod.quantity <= 0) {
+            removedFromCart.push({ item, reason: 'out_of_stock' });
+            return false;
+          }
+          return true;
+        });
+
+        // Filter wishlist similarly
+        user.wishlistdata = (user.wishlistdata || []).filter((item) => {
+          const key = String(item.productId);
+          const prod = foundByKey.get(key);
+          if (!prod) {
+            removedFromWishlist.push({ item, reason: 'deleted' });
+            return false;
+          }
+          if (typeof prod.quantity === 'number' && prod.quantity <= 0) {
+            removedFromWishlist.push({ item, reason: 'out_of_stock' });
+            return false;
+          }
+          return true;
+        });
+
+        // Persist changes if we removed anything
+        if (removedFromCart.length > 0 || removedFromWishlist.length > 0) {
+          await user.save();
+          const safe = await User.findById(userId).select('-password');
+          return res.status(200).json({ user: safe, removed: { cart: removedFromCart, wishlist: removedFromWishlist } });
+        }
+      }
+    }
+
+    // Nothing removed — return safe user doc
+    const safeUser = await User.findById(userId).select("-password");
+    return res.status(200).json(safeUser);
   } catch (error) {
     return res.status(500).json({ error: "Internal server error" });
   }

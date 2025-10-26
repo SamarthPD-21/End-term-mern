@@ -159,6 +159,17 @@ const userSlice = createSlice({
         state.cartdata.push(action.payload);
       }
     },
+    // Restore a cart item to an exact quantity (used for undo operations).
+    // This will set the item's quantity to the provided value instead of
+    // incrementing. If the item doesn't exist, it will be inserted.
+    restoreCartItem(state, action: PayloadAction<CartItem>) {
+      const existing = state.cartdata.find((item) => item.id === action.payload.id);
+      if (existing) {
+        existing.quantity = action.payload.quantity;
+      } else {
+        state.cartdata.push(action.payload);
+      }
+    },
     updateCartQuantity(
       state,
       action: PayloadAction<{ id: string; quantity: number }>
@@ -245,6 +256,7 @@ export const {
   removeAddress,
   setCart,
   addToCart,
+  restoreCartItem,
   updateCartQuantity,
   removeFromCart,
   updateWishlist,
