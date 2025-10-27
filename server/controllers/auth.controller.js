@@ -5,6 +5,10 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "change-me";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "samarthpd21@gmail.com";
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || ADMIN_EMAIL)
+  .split(",")
+  .map((s) => String(s || "").trim().toLowerCase())
+  .filter(Boolean);
 
 export const signup = async (req, res) => {
   try {
@@ -38,7 +42,8 @@ export const signup = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      isAdmin: email === ADMIN_EMAIL,
+      // mark as admin when the signup email is listed in ADMIN_EMAILS
+      isAdmin: ADMIN_EMAILS.includes(String(email).toLowerCase()),
       userName: safeUserName,
     });
 
