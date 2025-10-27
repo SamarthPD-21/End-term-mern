@@ -119,7 +119,16 @@ export const signin = async (req, res) => {
 
 export const signout = async (req, res) => {
   try {
-    res.clearCookie("token");
+    // Use the same cookie options as when the cookie was set so the browser
+    // will remove it reliably (sameSite/secure/path must match in some cases).
+    const cookieOptions = {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: '/',
+    };
+
+    res.clearCookie("token", cookieOptions);
     return res.status(200).json({ message: "Logout successful" });
   } catch (error) {
     return res.status(500).json({ error: "Error signing out" });
