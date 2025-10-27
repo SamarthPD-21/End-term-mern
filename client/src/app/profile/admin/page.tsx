@@ -87,13 +87,14 @@ export default function AdminPanel() {
   const loadOrders = useCallback(async (page = 1, q?: string) => {
     try {
       setOrdersLoading(true);
-      const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+  const API = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
       const params = new URLSearchParams();
       params.set('page', String(page));
       params.set('pageSize', String(ordersPageSize));
       if (ordersSort) params.set('sort', ordersSort);
       if (q) params.set('q', q);
-      const res = await fetch(`${API}/api/admin/orders?${params.toString()}`, { credentials: 'include' });
+  const url = API ? `${API}/api/admin/orders?${params.toString()}` : `/api/admin/orders?${params.toString()}`;
+  const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load orders');
       const json = await res.json();
       setOrders(json.items || []);
@@ -606,8 +607,9 @@ export default function AdminPanel() {
                           <button onClick={async () => {
                             if (!confirm('Delete this message?')) return;
                             try {
-                              const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-                              const res = await fetch(`${API}/api/admin/contacts/${c._id}`, { method: 'DELETE', credentials: 'include' });
+                              const API = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+                              const url = API ? `${API}/api/admin/contacts/${c._id}` : `/api/admin/contacts/${c._id}`;
+                              const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
                               if (!res.ok) {
                                 const j = await res.json().catch(() => ({}));
                                 rtToast.error(j?.error || 'Failed to delete');

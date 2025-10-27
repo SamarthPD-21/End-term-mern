@@ -1,8 +1,9 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
+// When NEXT_PUBLIC_API_URL is not set, use relative URLs so client calls the same origin
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
-const api = axios.create({baseURL: API_URL, withCredentials: true,})
+const api = axios.create({ baseURL: API_URL || undefined, withCredentials: true });
 
 export const getCurrentUser = async () => {
   try {
