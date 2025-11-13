@@ -1,5 +1,5 @@
 
-# End-term MERN E‑commerce Project
+# MERN E‑commerce Project
 
 This repository contains a full-stack MERN (MongoDB, Express, React/Next.js, Node.js) e‑commerce application for showcasing handcrafted and sustainable products (categories like copper, handicrafts, jewelry, leather, and sustainable goods). The project pairs a modern Next.js + TypeScript frontend with an Express API backend built using Mongoose, JWT authentication, and Cloudinary image uploads.
 
